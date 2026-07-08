@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-display: "Montserrat", sans-serif;
+
+  --color-primary: #121367;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #2a2d7c;
+  --color-on-primary-container: #9599ee;
+  
+  --color-secondary: #5c5d6e;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #e1e1f5;
+  --color-on-secondary-container: #626374;
+  
+  --color-tertiary: #431000;
+  --color-tertiary-container: #671e00;
+  --color-on-tertiary-container: #fa7b4d;
+  --color-tertiary-fixed: #ffdbcf;
+  --color-on-tertiary-fixed-variant: #822800;
+  --color-on-tertiary-fixed: #380c00;
+
+  --color-background: #f8f9fc;
+  --color-on-background: #191c1e;
+  
+  --color-surface: #f8f9fc;
+  --color-on-surface: #191c1e;
+  --color-on-surface-variant: #464651;
+  --color-surface-dim: #d9dadd;
+  --color-surface-bright: #f8f9fc;
+  --color-surface-container-low: #f2f3f6;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container: #edeef1;
+  --color-surface-container-high: #e7e8eb;
+  --color-surface-container-highest: #e1e2e5;
+
+  --color-outline: #777682;
+  --color-outline-variant: #c7c5d3;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+}
+
+/* Glassmorphism card utility */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Subtle glow utility */
+.glow-accent {
+  box-shadow: 0 0 20px rgba(149, 153, 238, 0.3);
+}
+
+/* Custom shimmer animation */
+.shimmer-bg {
+  background: linear-gradient(90deg, transparent, rgba(149, 153, 238, 0.1), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite linear;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.material-symbols-outlined.filled {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Hide scrollbar for category list scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -1,0 +1,167 @@
+[
+  {
+    "id": "usr-001",
+    "name": "Julian",
+    "email": "style@digitalatelier.com",
+    "password": "password123",
+    "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuDQBHHAeaFD8nv2PFnW1tqz8kNKXf22WX3tNvkeQaSm1Q8_3f6D84wu-kwTJvUOJr70w9cl_FGKtcwRqxKQGEd6WmrEQWOrEkUJm-i93C2jgwN-_K9QDWT30K7UwvSrnYPRhhi1molrdNoQllK5ywseT5FlRsTpN2qJGJgUb-2J1VtKSRGGhlU5jW6Np1j4wWPCq-cxfgfD0syO8-h5xEdYHRx64z6VEhN6mjfe3e4NCHauTkWD6kc",
+    "skinTone": "Cool Ivory",
+    "skinToneColor": "#F5E6DA",
+    "bodyType": "Hourglass",
+    "recommendationColors": [
+      {
+        "name": "Sage Green",
+        "hex": "#A5C9CA"
+      },
+      {
+        "name": "Off White",
+        "hex": "#E7F6F2"
+      },
+      {
+        "name": "Light Gray",
+        "hex": "#D8D8D8"
+      },
+      {
+        "name": "Mid Gray",
+        "hex": "#B2B2B2"
+      },
+      {
+        "name": "Slate Gray",
+        "hex": "#395B64"
+      }
+    ],
+    "createdAt": "2026-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "usr-1783500179684",
+    "name": "xiba",
+    "email": "xibaleigeqingesimida@xiba",
+    "password": "xibalege",
+    "avatar": "",
+    "skinTone": "Cool Ivory",
+    "skinToneColor": "#F5E6DA",
+    "bodyType": "Hourglass",
+    "recommendationColors": [
+      {
+        "name": "Sage Green",
+        "hex": "#A5C9CA"
+      },
+      {
+        "name": "Off White",
+        "hex": "#E7F6F2"
+      },
+      {
+        "name": "Light Gray",
+        "hex": "#D8D8D8"
+      },
+      {
+        "name": "Mid Gray",
+        "hex": "#B2B2B2"
+      },
+      {
+        "name": "Slate Gray",
+        "hex": "#395B64"
+      }
+    ],
+    "createdAt": "2026-07-08T08:42:59.684Z"
+  },
+  {
+    "id": "usr-1783500321652",
+    "name": "gay",
+    "email": "axibaleigeqingesimid@xiba",
+    "password": "wocaonima",
+    "avatar": "",
+    "skinTone": "Cool Ivory",
+    "skinToneColor": "#F5E6DA",
+    "bodyType": "Hourglass",
+    "recommendationColors": [
+      {
+        "name": "Sage Green",
+        "hex": "#A5C9CA"
+      },
+      {
+        "name": "Off White",
+        "hex": "#E7F6F2"
+      },
+      {
+        "name": "Light Gray",
+        "hex": "#D8D8D8"
+      },
+      {
+        "name": "Mid Gray",
+        "hex": "#B2B2B2"
+      },
+      {
+        "name": "Slate Gray",
+        "hex": "#395B64"
+      }
+    ],
+    "createdAt": "2026-07-08T08:45:21.652Z"
+  },
+  {
+    "id": "usr-1783500374849",
+    "name": "sucicud",
+    "email": "iundqiucstyle@digitalatelier.com",
+    "password": "password123dijnqwdn j",
+    "avatar": "",
+    "skinTone": "Cool Ivory",
+    "skinToneColor": "#F5E6DA",
+    "bodyType": "Hourglass",
+    "recommendationColors": [
+      {
+        "name": "Sage Green",
+        "hex": "#A5C9CA"
+      },
+      {
+        "name": "Off White",
+        "hex": "#E7F6F2"
+      },
+      {
+        "name": "Light Gray",
+        "hex": "#D8D8D8"
+      },
+      {
+        "name": "Mid Gray",
+        "hex": "#B2B2B2"
+      },
+      {
+        "name": "Slate Gray",
+        "hex": "#395B64"
+      }
+    ],
+    "createdAt": "2026-07-08T08:46:14.849Z"
+  },
+  {
+    "id": "usr-1783500453147",
+    "name": "我cnm，gay",
+    "email": "style@digitalatelier",
+    "password": "password1dfdvc",
+    "avatar": "",
+    "skinTone": "Cool Ivory",
+    "skinToneColor": "#F5E6DA",
+    "bodyType": "Hourglass",
+    "recommendationColors": [
+      {
+        "name": "Sage Green",
+        "hex": "#A5C9CA"
+      },
+      {
+        "name": "Off White",
+        "hex": "#E7F6F2"
+      },
+      {
+        "name": "Light Gray",
+        "hex": "#D8D8D8"
+      },
+      {
+        "name": "Mid Gray",
+        "hex": "#B2B2B2"
+      },
+      {
+        "name": "Slate Gray",
+        "hex": "#395B64"
+      }
+    ],
+    "createdAt": "2026-07-08T08:47:33.147Z"
+  }
+]
