@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { UserProfile, Outfit, Item } from '../types';
-import { INITIAL_OUTFITS } from '../data';
+import { getInitialOutfits } from '../data';
+import { useTranslation } from '../i18n';
 
 interface HomeTabProps {
   user: UserProfile;
@@ -8,7 +9,16 @@ interface HomeTabProps {
   onViewItem: (item: Item) => void;
 }
 
+function getGreetingKey(): 'goodMorning' | 'goodAfternoon' | 'goodEvening' {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'goodMorning';
+  if (hour < 18) return 'goodAfternoon';
+  return 'goodEvening';
+}
+
 export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabProps) {
+  const { t, language } = useTranslation();
+  const INITIAL_OUTFITS = getInitialOutfits(language);
   const [selectedOutfit, setSelectedOutfit] = useState<Outfit | null>(null);
 
   // Hardcoded recommendations with gorgeous images from the prompt
@@ -16,9 +26,10 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
     {
       id: 'school',
       scenario: 'School',
-      title: 'Modern Academic',
+      scenarioKey: 'scenarioSchool',
+      titleKey: 'recommendationSchoolTitle',
+      descKey: 'recommendationSchoolDesc',
       image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD0I2XTz8PhphuIcrCA3S22OuduwzQ5SD3owmAzyD_ZGB8h3cuS7RJXYQlG4oUq0f6OPjW1yE4c6ZovqJwESISeY1tk2Qx1AErbwzmafnZrdfwq4Q9v7VbxIVrFX62clr8VnG4TVDRlqLeBy6xiM7ZHyAuOakBUqKl3EfePcQsF-WNjFw9y2_uCdB77b0azF6MRcwa3FUO64Q5qo3KacMrF_x87yd3ZfBXeBYnGK6QnCsYpW-VgpdY',
-      description: 'A textured navy cardigan styled over a simple white tee and relaxed denim. High-key soft studio style.',
       items: [
         { name: 'Navy Cardigan', brand: 'Theory', material: 'Textured Cotton', color: 'Navy' },
         { name: 'Relaxed Denim', brand: 'Levi\'s', material: 'Organic Denim', color: 'Light Indigo' }
@@ -27,9 +38,10 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
     {
       id: 'work',
       scenario: 'Work',
-      title: 'Executive Minimal',
+      scenarioKey: 'scenarioWork',
+      titleKey: 'recommendationWorkTitle',
+      descKey: 'recommendationWorkDesc',
       image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDl0aMuphXP34niWVCR1EqigQZCVekAg9cnRg50pJ8TOYF5ETbk14cOOLhgn2kRM6DOcP0M0TMtQ4d3tf_y2Ay2kyWMWarqt5wxan_uyRVH7xqLw7rHVDPl6DCU6irN9e1srrXKZ441aOI4VeKQi9FvZCYgat9s7T-kojS6V5H-yOcrL6z8J4LezVGPPYh4K0mD5vEL5_Kq3mBnf-jLqhqz9I7T3eXN5WrPsWONnMreyO5B6jVQIoM',
-      description: 'A sharp, oversized charcoal blazer styled over a minimalist black turtleneck.',
       items: [
         { name: 'Oversized Blazer', brand: 'The Row', material: 'Fine Wool blend', color: 'Charcoal' },
         { name: 'Black Turtleneck', brand: 'Celine', material: 'Cashmere-Silk', color: 'Black' }
@@ -38,9 +50,10 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
     {
       id: 'date',
       scenario: 'Date',
-      title: 'Midnight Elegance',
+      scenarioKey: 'scenarioDate',
+      titleKey: 'recommendationDateTitle',
+      descKey: 'recommendationDateDesc',
       image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAEpoOvjlvr73VlFQTJoVyFFGPX0qU1ieCoWHZO0ypX0RZ2otjwQOCGcCw3c9Xm-2pbaiIxmWQ5Wwj2OF4fHz09_NL1L0hWDRA7MwavdWxFYiE5FXOfhl7ZaseCu8YK8miIz9H1xn3suxuFQwnRbHkyhMkx_eepZcLgUr9AJaSy7L8iFzY2wU5KT9azoC6rz78-H57L3mEUxpeL40Pg-H3K2kS8dXQnkRRxxT5mD5JpEF5pv2m7Ucg',
-      description: 'A romantic yet sophisticated ensemble: deep emerald silk slip dress paired with a structured black leather jacket.',
       items: [
         { name: 'Silk Slip Dress', brand: 'La Perla', material: 'Mulberry Silk', color: 'Emerald' },
         { name: 'Structured Leather Jacket', brand: 'Saint Laurent', material: 'Nappa Leather', color: 'Black' }
@@ -49,9 +62,10 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
     {
       id: 'weekend',
       scenario: 'Weekend',
-      title: 'Refined Comfort',
+      scenarioKey: 'scenarioWeekend',
+      titleKey: 'recommendationWeekendTitle',
+      descKey: 'recommendationWeekendDesc',
       image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB0YxDsde2x0cWMjhsJAyrLR3d3ujDbNuHH7hqS_a_2oWDuCniZJAV0L39vg5CiuGO4ww-hDo0vRp3BIM4s4J4j5rrl9g6B3_-PqXyTNgqEGSwR_tUj6ku5WeEe0-JCJGGj-Vq-Qq6Z9NFp55iK8DdyJbSil7OJjdBxxexCNoX84jfCDvI0jZ7Jwaw57zPDHeXJQ_X_9O0aO6N-hq7eq7J-XMS7gjZvh0LlGPE9pkkLbzL0-ud3q7g',
-      description: 'Premium casual coordinates: organic beige hoodie paired with matching relaxed joggers.',
       items: [
         { name: 'Oversized Beige Hoodie', brand: 'Loro Piana', material: 'Cashmere-Cotton', color: 'Beige' },
         { name: 'Relaxed Joggers', brand: 'Loro Piana', material: 'Cashmere-Cotton', color: 'Beige' }
@@ -65,10 +79,10 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
       <section className="flex justify-between items-center bg-white/40 p-4 rounded-2xl border border-white/20 backdrop-blur-md">
         <div>
           <h2 className="font-display text-2xl lg:text-3xl font-extrabold text-primary">
-            Good morning, {user.name}.
+            {t(getGreetingKey())}, {user.name}.
           </h2>
           <p className="text-sm font-medium text-on-surface-variant">
-            Ready to define your aesthetic today?
+            {t('welcomeSubtitle')}
           </p>
         </div>
         {user.avatar && (
@@ -88,14 +102,14 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
               <div className="flex items-center gap-2 mb-2">
                 <span className="material-symbols-outlined filled text-on-tertiary-container text-lg">sunny</span>
                 <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                  Today's Forecast
+                  {t('todayForecast')}
                 </span>
               </div>
               <h3 className="font-display text-2xl lg:text-3xl font-extrabold text-[#191c1e]">
-                Sunny 22°C
+                {t('weatherSunny')}
               </h3>
               <p className="text-sm lg:text-base font-semibold text-primary mt-2">
-                Light layers recommended.
+                {t('lightLayers')}
               </p>
             </div>
             <div className="mt-6">
@@ -108,7 +122,7 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
                 }}
                 className="bg-primary text-white px-6 py-2.5 rounded-full text-xs font-bold hover:bg-primary/90 active:scale-95 transition-all cursor-pointer shadow-sm shadow-primary/10"
               >
-                View Details
+                {t('viewDetails')}
               </button>
             </div>
           </div>
@@ -127,10 +141,10 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
       <section>
         <div className="flex justify-between items-end mb-4 px-1">
           <h3 className="font-display text-lg lg:text-xl font-bold text-primary">
-            Quick Recommendations
+            {t('quickRecommendations')}
           </h3>
           <span className="text-xs font-semibold text-on-primary-container">
-            AI Personalized Picks
+            {t('aiPersonalizedPicks')}
           </span>
         </div>
 
@@ -142,15 +156,15 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
                 // Map to a complete styled outfit modal for extreme fidelity!
                 const matchedOutfit = INITIAL_OUTFITS.find(o => o.scenario === rec.scenario) || {
                   id: rec.id,
-                  name: rec.title,
+                  name: t(rec.titleKey as keyof typeof import('../i18n/translations').translations['zh-CN']),
                   scenario: rec.scenario as any,
                   image: rec.image,
-                  tempPerfect: 'Perfect Silhouette',
+                  tempPerfect: t('perfectSilhouette'),
                   curationNotes: [
                     {
                       icon: 'auto_awesome',
-                      title: 'Sophisticated Match',
-                      content: rec.description,
+                      title: t('sophisticatedMatch'),
+                      content: t(rec.descKey as keyof typeof import('../i18n/translations').translations['zh-CN']),
                       bgClass: 'bg-primary-fixed',
                       iconClass: 'text-on-primary-fixed-variant'
                     }
@@ -164,14 +178,14 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
               <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden mb-2 shadow-sm border border-white/40 bg-surface-container-low">
                 <img
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  alt={rec.title}
+                  alt={t(rec.titleKey as keyof typeof import('../i18n/translations').translations['zh-CN'])}
                   src={rec.image}
                 />
                 <div className="absolute bottom-3 left-3 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/50">
-                  <span className="text-[11px] font-bold text-primary">{rec.scenario}</span>
+                  <span className="text-[11px] font-bold text-primary">{t(rec.scenarioKey as keyof typeof import('../i18n/translations').translations['zh-CN'])}</span>
                 </div>
               </div>
-              <p className="text-xs font-bold text-on-background px-1 truncate">{rec.title}</p>
+              <p className="text-xs font-bold text-on-background px-1 truncate">{t(rec.titleKey as keyof typeof import('../i18n/translations').translations['zh-CN'])}</p>
             </div>
           ))}
         </div>
@@ -187,10 +201,10 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
               smart_toy
             </span>
             <h3 className="font-display text-xl lg:text-2xl font-extrabold text-white mb-2">
-              New Arrival in Closet?
+              {t('newArrival')}
             </h3>
             <p className="text-sm text-on-primary-container/90 mb-8 max-w-sm mx-auto leading-relaxed">
-              Let our AI analyze fabric, color, and fit to match your new piece with your existing wardrobe for effortless style.
+              {t('newArrivalDesc')}
             </p>
             <button
               type="button"
@@ -198,7 +212,7 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
               className="bg-white text-primary px-8 py-4 rounded-full font-display text-sm font-bold shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer hover:bg-white/95"
             >
               <span className="material-symbols-outlined text-primary text-xl">document_scanner</span>
-              Start AI Scan
+              {t('startAiScan')}
             </button>
           </div>
         </div>
@@ -212,7 +226,7 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
             <div className="p-6 border-b border-outline-variant/30 flex justify-between items-center bg-white/40">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary filled">auto_awesome</span>
-                <h3 className="font-display font-extrabold text-primary text-lg">AI Styling Suggestion</h3>
+                <h3 className="font-display font-extrabold text-primary text-lg">{t('aiStylingSuggestion')}</h3>
               </div>
               <button
                 type="button"
@@ -236,7 +250,7 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
               {/* Title Block */}
               <div>
                 <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
-                  {selectedOutfit.scenario} Style Curation
+                  {t('styleCuration', { scenario: selectedOutfit.scenario })}
                 </span>
                 <h4 className="font-display text-2xl font-extrabold text-primary mt-1">
                   {selectedOutfit.name}
@@ -263,7 +277,7 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
               {/* Ensemble breakdown */}
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-outline mb-3">
-                  Ensemble Breakdown
+                  {t('ensembleBreakdown')}
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   {selectedOutfit.items?.map((item: any, idx) => (
@@ -299,13 +313,13 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
               <button
                 type="button"
                 onClick={() => {
-                  alert(`Look applied! Enjoy your perfect styled ${selectedOutfit.scenario} outfit.`);
+                  alert(t('lookApplied', { scenario: selectedOutfit.scenario }));
                   setSelectedOutfit(null);
                 }}
                 className="flex-1 py-4 bg-primary text-white rounded-full font-display font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer shadow-lg shadow-primary/10"
               >
                 <span className="material-symbols-outlined text-white text-base">checkroom</span>
-                Wear Outfit
+                {t('wearOutfit')}
               </button>
             </div>
           </div>

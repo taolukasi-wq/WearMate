@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Item, UserProfile, Outfit, CurationNote } from '../types';
+import { useTranslation } from '../i18n';
 
 interface ClosetTabProps {
   items: Item[];
@@ -8,7 +9,16 @@ interface ClosetTabProps {
   onViewItem: (item: Item) => void;
 }
 
+const FILTER_KEYS: Record<'All' | 'tops' | 'bottoms' | 'shoes' | 'accessories', 'allItems' | 'tops' | 'bottoms' | 'shoes' | 'accessories'> = {
+  All: 'allItems',
+  tops: 'tops',
+  bottoms: 'bottoms',
+  shoes: 'shoes',
+  accessories: 'accessories',
+};
+
 export default function ClosetTab({ items, user, onAddItem, onViewItem }: ClosetTabProps) {
+  const { t } = useTranslation();
   const [activeFilter, setActiveFilter] = useState<'All' | 'tops' | 'bottoms' | 'shoes' | 'accessories'>('All');
   
   // States for adding a new item
@@ -129,19 +139,19 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
       setGeneratedOutfit(parsedOutfit);
     } catch (error) {
       console.error(error);
-      alert('Error generating outfit. Using simulated styling engine.');
+      alert(t('mixMatchError'));
       // fallback
       setGeneratedOutfit({
         id: 'fallback',
-        name: 'Classic Urban Uniform',
+        name: t('fallbackOutfitName'),
         scenario: selectedScenario,
         image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDkgvRRIoxnzEGrjNxf9r_qxVUvsfQLoGS6x0O_t20xismypTuOFOzHwkfnNJUwyl2T_DzZR8qy0N56Pd0859cKD730FCy6ElfaQ82VyIqS_WJNHIOOdRDch7VEsW_kOHqETcun0WuiRQHZ9gLVQ9fOi9Ypv6Uw5cgLgusZcIcecUhvsWdNiXvvNs3yALpTPnEXsz0kZsFIw8MGu_TzyXZz90iLe172iwTRtnujpru4huTYhrKgR3A',
         tempPerfect: '21°C Comfort',
         curationNotes: [
           {
             icon: 'auto_awesome',
-            title: 'Chic Tailoring Match',
-            content: 'Your blazer anchors this outfit beautifully with high-contrast neutral pants.',
+            title: t('fallbackNoteTitle'),
+            content: t('fallbackNoteContent'),
             bgClass: 'bg-primary-fixed',
             iconClass: 'text-on-primary-fixed-variant'
           }
@@ -159,13 +169,13 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
       <section className="flex flex-col gap-2">
         <div className="flex justify-between items-end">
           <div>
-            <h2 className="font-display text-2xl lg:text-3xl font-extrabold text-primary">Your Closet</h2>
-            <p className="text-sm font-medium text-on-surface-variant">Curated Digital Collection</p>
+            <h2 className="font-display text-2xl lg:text-3xl font-extrabold text-primary">{t('myCloset')}</h2>
+            <p className="text-sm font-medium text-on-surface-variant">{t('closetSubtitle')}</p>
           </div>
           <div className="flex items-center gap-2 bg-secondary-container px-4 py-2 rounded-xl shadow-sm">
             <span className="font-display font-extrabold text-primary">{items.length}</span>
             <span className="text-[10px] font-bold text-on-secondary-container uppercase tracking-wider">
-              Total Items
+              {t('totalItems')}
             </span>
           </div>
         </div>
@@ -182,7 +192,7 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                   : 'glass-card text-on-surface-variant hover:bg-secondary-container/40'
               }`}
             >
-              {filter === 'All' ? 'All Items' : filter.charAt(0).toUpperCase() + filter.slice(1)}
+              {t(FILTER_KEYS[filter])}
             </button>
           ))}
         </div>
@@ -221,7 +231,7 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
             <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
               <span className="material-symbols-outlined text-2xl">photo_camera</span>
             </div>
-            <span className="text-xs font-bold text-on-surface-variant">Add New Item</span>
+            <span className="text-xs font-bold text-on-surface-variant">{t('addNewItem')}</span>
           </button>
         </div>
       </section>
@@ -234,13 +244,13 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
             <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
               auto_awesome
             </span>
-            <span className="text-xs font-bold text-primary uppercase tracking-widest">Closet Analysis</span>
+            <span className="text-xs font-bold text-primary uppercase tracking-widest">{t('closetAnalysis')}</span>
           </div>
           <p className="font-display text-lg font-extrabold text-primary mb-2">
-            Your closet is 85% cohesive.
+            {t('closetCohesive')}
           </p>
           <p className="text-xs text-on-surface-variant leading-relaxed max-w-sm">
-            AI analysis suggests adding a camel trench coat or a leather accessory to unlock 15+ stunning new outfit combinations.
+            {t('closetAnalysisDesc')}
           </p>
         </div>
         <button
@@ -251,7 +261,7 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
           }}
           className="relative z-10 self-start mt-6 px-6 py-2.5 rounded-full bg-primary text-white text-xs font-bold shadow-md hover:bg-primary-container active:scale-95 transition-transform cursor-pointer"
         >
-          View Suggestions
+          {t('viewSuggestions')}
         </button>
       </section>
 
@@ -262,7 +272,7 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
           className="flex items-center gap-2.5 bg-primary text-white px-6 py-4 rounded-full shadow-xl glow-accent active:scale-95 transition-all group relative cursor-pointer"
         >
           <span className="material-symbols-outlined filled text-white animate-pulse">smart_toy</span>
-          <span className="text-xs font-bold font-display tracking-wide">Mix & Match</span>
+          <span className="text-xs font-bold font-display tracking-wide">{t('mixMatch')}</span>
         </button>
       </div>
 
@@ -272,7 +282,7 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
           <div className="bg-[#f8f9fc] w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl border border-white/30 max-h-[90vh] flex flex-col animate-fade-in">
             {/* Modal Header */}
             <div className="p-6 border-b border-outline-variant/30 flex justify-between items-center bg-white/40">
-              <h3 className="font-display font-extrabold text-primary text-lg">Add Product to Closet</h3>
+              <h3 className="font-display font-extrabold text-primary text-lg">{t('addProductToCloset')}</h3>
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
@@ -286,12 +296,12 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
             <form onSubmit={handleAddNewItem} className="flex-1 overflow-y-auto p-6 space-y-4">
               <div>
                 <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1">
-                  Product Name
+                  {t('productName')}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Classic Trench Coat"
+                  placeholder={t('placeholderProductName')}
                   value={newItemName}
                   onChange={(e) => setNewItemName(e.target.value)}
                   className="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
@@ -301,12 +311,12 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1">
-                    Designer Brand
+                    {t('designerBrand')}
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Burberry"
+                    placeholder={t('placeholderBrand')}
                     value={newItemBrand}
                     onChange={(e) => setNewItemBrand(e.target.value)}
                     className="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
@@ -314,17 +324,17 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1">
-                    Category
+                    {t('category')}
                   </label>
                   <select
                     value={newItemCategory}
                     onChange={(e) => setNewItemCategory(e.target.value as any)}
                     className="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
                   >
-                    <option value="tops">Tops</option>
-                    <option value="bottoms">Bottoms</option>
-                    <option value="shoes">Shoes</option>
-                    <option value="accessories">Accessories</option>
+                    <option value="tops">{t('tops')}</option>
+                    <option value="bottoms">{t('bottoms')}</option>
+                    <option value="shoes">{t('shoes')}</option>
+                    <option value="accessories">{t('accessories')}</option>
                   </select>
                 </div>
               </div>
@@ -332,11 +342,11 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1">
-                    Fabric
+                    {t('materialFabric')}
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Cotton Gabardine"
+                    placeholder={t('placeholderMaterial')}
                     value={newItemMaterial}
                     onChange={(e) => setNewItemMaterial(e.target.value)}
                     className="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
@@ -344,11 +354,11 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1">
-                    Color
+                    {t('color')}
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Honey Camel"
+                    placeholder={t('placeholderColor')}
                     value={newItemColor}
                     onChange={(e) => setNewItemColor(e.target.value)}
                     className="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
@@ -356,11 +366,11 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-1 ml-1">
-                    Size
+                    {t('size')}
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. IT 40"
+                    placeholder={t('placeholderSize')}
                     value={newItemSize}
                     onChange={(e) => setNewItemSize(e.target.value)}
                     className="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm"
@@ -371,7 +381,7 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
               {/* Photo presets selection */}
               <div>
                 <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-2 ml-1">
-                  Choose Curated Product Photo
+                  {t('chooseProductPhoto')}
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   {presetImages.map((p, idx) => (
@@ -398,13 +408,13 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                   onClick={() => setIsAddModalOpen(false)}
                   className="flex-1 py-4 border border-outline-variant rounded-xl font-display font-semibold text-xs text-on-surface-variant hover:bg-surface-container-low active:scale-95 transition-all cursor-pointer"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 py-4 bg-primary text-white rounded-xl font-display font-semibold text-xs shadow-lg shadow-primary/10 hover:bg-primary-container active:scale-95 transition-all cursor-pointer"
                 >
-                  Add to Closet
+                  {t('addToCloset')}
                 </button>
               </div>
             </form>
@@ -420,7 +430,7 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
             <div className="p-6 border-b border-outline-variant/30 flex justify-between items-center bg-white/40">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined filled text-primary animate-spin">smart_toy</span>
-                <h3 className="font-display font-extrabold text-primary text-lg">AI Smart Mix & Match</h3>
+                <h3 className="font-display font-extrabold text-primary text-lg">{t('aiSmartMixMatch')}</h3>
               </div>
               <button
                 type="button"
@@ -439,7 +449,7 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
               {!generatedOutfit && !isGenerating ? (
                 <div className="space-y-6 text-center py-6">
                   <p className="text-sm font-medium text-on-surface-variant leading-relaxed">
-                    Select the ideal context scenario for your day. Our AI stylist will select and curate complementary items from your closet.
+                    {t('mixMatchDesc')}
                   </p>
                   
                   {/* Scenario selection */}
@@ -455,7 +465,7 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                             : 'text-on-surface-variant'
                         }`}
                       >
-                        {scen}
+                        {t(scen.toLowerCase() as 'commute' | 'date' | 'casual')}
                       </button>
                     ))}
                   </div>
@@ -466,7 +476,7 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                     className="w-full py-4 mt-6 bg-primary text-white rounded-xl font-display font-bold text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-2 hover:bg-primary-container active:scale-95 transition-all cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-white text-base">auto_awesome</span>
-                    Generate Look
+                    {t('generateLook')}
                   </button>
                 </div>
               ) : isGenerating ? (
@@ -478,9 +488,9 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                     </span>
                   </div>
                   <div className="text-center space-y-1">
-                    <h4 className="font-display font-bold text-primary">Atelier Styling Intelligence</h4>
+                    <h4 className="font-display font-bold text-primary">{t('atelierStylingIntelligence')}</h4>
                     <p className="text-xs text-on-surface-variant animate-pulse font-medium">
-                      Harmonizing textures, colors & tones for {selectedScenario}...
+                      {t('harmonizing', { scenario: selectedScenario })}
                     </p>
                   </div>
                 </div>
@@ -498,7 +508,7 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                     {/* Headline */}
                     <div>
                       <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
-                        Perfect {selectedScenario} Match
+                        {t('perfectMatch', { scenario: selectedScenario })}
                       </span>
                       <h4 className="font-display text-2xl font-extrabold text-primary mt-1">
                         {generatedOutfit.name}
@@ -525,7 +535,7 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                     {/* Matched closet items */}
                     <div>
                       <p className="text-xs font-bold uppercase tracking-wider text-outline mb-3">
-                        Selected Wardrobe Coordinates
+                        {t('selectedWardrobeCoordinates')}
                       </p>
                       <div className="grid grid-cols-2 gap-4">
                         {generatedOutfit.items?.map((item, idx) => (
@@ -564,19 +574,19 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                   }}
                   className="flex-1 py-4 border border-outline-variant rounded-full font-display font-semibold text-sm hover:bg-surface-container-low active:scale-95 transition-all cursor-pointer text-center"
                 >
-                  Close
+                  {t('cancel')}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    alert(`Look saved as an active Ensemble! Enjoy your day.`);
+                    alert(t('saveFavoriteLookSuccess'));
                     setIsMixMatchOpen(false);
                     setGeneratedOutfit(null);
                   }}
                   className="flex-1 py-4 bg-primary text-white rounded-full font-display font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer shadow-lg shadow-primary/10"
                 >
                   <span className="material-symbols-outlined text-white text-base">bookmark</span>
-                  Save Favorite Look
+                  {t('saveFavoriteLook')}
                 </button>
               </div>
             )}

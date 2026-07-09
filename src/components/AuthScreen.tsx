@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { AuthResponse, UserProfile } from '../types';
+import { useTranslation } from '../i18n';
 
 interface AuthScreenProps {
   onLogin: (user: UserProfile, token: string) => void;
 }
 
 export default function AuthScreen({ onLogin }: AuthScreenProps) {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('style@digitalatelier.com');
   const [password, setPassword] = useState('password123');
@@ -63,10 +65,10 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
           />
           <div className="absolute bottom-16 left-16 right-16 z-30 text-white">
             <h1 className="font-display text-4xl lg:text-5xl font-extrabold tracking-tight mb-4">
-              Curating Your Digital Identity.
+              {t('welcomeBack')}.
             </h1>
             <p className="font-sans text-lg text-white/90 max-w-md leading-relaxed">
-              Experience the fusion of high-fashion editorial aesthetics and cutting-edge computational intelligence.
+              {t('tagline')}
             </p>
           </div>
         </div>
@@ -81,7 +83,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
               DigitalAtelier
             </h2>
             <p className="font-sans text-sm font-medium text-on-surface-variant">
-              Elevate your style with AI-powered curation
+              {t('tagline')}
             </p>
           </div>
 
@@ -98,7 +100,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                 }`}
                 onClick={() => setMode('signin')}
               >
-                Sign In
+                {t('signIn')}
               </button>
               <button
                 type="button"
@@ -109,7 +111,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                 }`}
                 onClick={() => setMode('signup')}
               >
-                Create Account
+                {t('createAccount')}
               </button>
             </div>
 
@@ -123,7 +125,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
               {mode === 'signup' && (
                 <div className="animate-fade-in">
                   <label className="block text-xs font-bold text-on-surface-variant mb-1 ml-1 uppercase tracking-wider">
-                    Full Name
+                    {t('fullName')}
                   </label>
                   <input
                     type="text"
@@ -131,14 +133,14 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     className="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-sans text-sm"
-                    placeholder="Alexander McQueen"
+                    placeholder={t('placeholderFullName')}
                   />
                 </div>
               )}
 
               <div>
                 <label className="block text-xs font-bold text-on-surface-variant mb-1 ml-1 uppercase tracking-wider">
-                  Email Address
+                  {t('email')}
                 </label>
                 <input
                   type="email"
@@ -146,18 +148,18 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-sans text-sm"
-                  placeholder="style@digitalatelier.com"
+                  placeholder={t('placeholderEmail')}
                 />
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-1 ml-1">
                   <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider">
-                    Password
+                    {t('password')}
                   </label>
                   {mode === 'signin' && (
                     <a href="#forgot" className="text-[11px] font-bold text-primary-container hover:underline">
-                      Forgot?
+                      {t('forgotPassword')}
                     </a>
                   )}
                 </div>
@@ -167,7 +169,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 bg-white border border-outline-variant rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-sans text-sm"
-                  placeholder="••••••••"
+                  placeholder={t('placeholderPassword')}
                 />
               </div>
 
@@ -179,12 +181,12 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                 {isLoading ? (
                   <>
                     <span className="material-symbols-outlined animate-spin text-white">sync</span>
-                    <span>Processing...</span>
+                    <span>{t('processing')}...</span>
                   </>
                 ) : mode === 'signin' ? (
-                  'Sign In'
+                  t('signIn')
                 ) : (
-                  'Create Account'
+                  t('createAccount')
                 )}
               </button>
             </form>
@@ -195,7 +197,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                 <div className="w-full border-t border-outline-variant/50"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-[#fbfcff]/90 px-3 text-on-surface-variant font-medium">Or continue with</span>
+                <span className="bg-[#fbfcff]/90 px-3 text-on-surface-variant font-medium">{t('orContinueWith')}</span>
               </div>
             </div>
 
@@ -203,7 +205,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
             <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
-                onClick={() => onLogin({ name: 'Julian', email: 'guest@apple.com', avatar: '', skinTone: 'Cool Ivory', bodyType: 'Hourglass' }, 'guest-token')}
+                onClick={() => onLogin({ name: t('guestName'), email: 'guest@apple.com', avatar: '', skinTone: 'Cool Ivory', bodyType: 'Hourglass' }, 'guest-token')}
                 className="flex items-center justify-center gap-2 py-3 border border-outline-variant/60 rounded-xl hover:bg-white transition-all active:scale-[0.98] cursor-pointer"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -212,11 +214,11 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                     fill="currentColor"
                   />
                 </svg>
-                <span className="font-sans text-xs font-semibold">Apple</span>
+                <span className="font-sans text-xs font-semibold">{t('apple')}</span>
               </button>
               <button
                 type="button"
-                onClick={() => onLogin({ name: 'Julian', email: 'guest@google.com', avatar: '', skinTone: 'Cool Ivory', bodyType: 'Hourglass' }, 'guest-token')}
+                onClick={() => onLogin({ name: t('guestName'), email: 'guest@google.com', avatar: '', skinTone: 'Cool Ivory', bodyType: 'Hourglass' }, 'guest-token')}
                 className="flex items-center justify-center gap-2 py-3 border border-outline-variant/60 rounded-xl hover:bg-white transition-all active:scale-[0.98] cursor-pointer"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -237,7 +239,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
                     fill="#EA4335"
                   />
                 </svg>
-                <span className="font-sans text-xs font-semibold">Google</span>
+                <span className="font-sans text-xs font-semibold">{t('google')}</span>
               </button>
             </div>
           </div>
@@ -264,8 +266,8 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
             <span className="material-symbols-outlined filled text-white text-lg">auto_awesome</span>
           </div>
           <div>
-            <p className="text-xs font-bold text-primary">AI Stylist Active</p>
-            <p className="text-[10px] text-on-surface-variant font-medium">Ready to scan closet</p>
+            <p className="text-xs font-bold text-primary">{t('aiScan')}</p>
+            <p className="text-[10px] text-on-surface-variant font-medium">{t('scanHint')}</p>
           </div>
         </div>
       </div>
@@ -276,8 +278,8 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
             <span className="material-symbols-outlined text-white text-lg">trending_up</span>
           </div>
           <div>
-            <p className="text-xs font-bold text-on-tertiary-container">Daily Trends</p>
-            <p className="text-[10px] text-on-surface-variant font-medium">Updated just now</p>
+            <p className="text-xs font-bold text-on-tertiary-container">{t('recommendedForYou')}</p>
+            <p className="text-[10px] text-on-surface-variant font-medium">{t('todayOutfit')}</p>
           </div>
         </div>
       </div>

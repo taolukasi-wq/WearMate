@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Item, UserProfile } from '../types';
+import { useTranslation } from '../i18n';
 
 interface ProductDetailProps {
   item: Item;
@@ -18,6 +19,7 @@ export default function ProductDetail({
   onToggleFavorite,
   onSelectRelatedItem,
 }: ProductDetailProps) {
+  const { t } = useTranslation();
   const [isLookbookGenerating, setIsLookbookGenerating] = useState(false);
   const [generatedLookbookNotes, setGeneratedLookbookNotes] = useState<string | null>(null);
 
@@ -40,8 +42,7 @@ export default function ProductDetail({
     // Call simulated custom lookbook styling after a small elegant delay
     setTimeout(() => {
       setGeneratedLookbookNotes(
-        `DigitalAtelier AI has designed a high-fashion ensemble centered around your ${item.brand} ${item.name}.
-To highlight its ${item.material} weave, pair it with structured neutral coordinates. The color tone coordinates beautifully with your ${user.skinTone} skin undertone, creating an effortlessly balanced silhouette perfect for ${user.bodyType} styling.`
+        t('lookbookDesc', { name: item.name })
       );
       setIsLookbookGenerating(false);
     }, 1800);
@@ -55,7 +56,7 @@ To highlight its ${item.material} weave, pair it with structured neutral coordin
         className="flex items-center gap-2 text-primary font-display font-bold text-xs uppercase tracking-wider hover:translate-x-[-4px] transition-transform cursor-pointer"
       >
         <span className="material-symbols-outlined text-sm">arrow_back</span>
-        Back to Closet
+        {t('backToCloset')}
       </button>
 
       {/* Main product visual and key specs */}
@@ -89,15 +90,15 @@ To highlight its ${item.material} weave, pair it with structured neutral coordin
 
           <div className="space-y-3.5 border-t border-b border-outline-variant/30 py-6">
             <div className="flex justify-between items-center text-sm">
-              <span className="text-on-surface-variant font-semibold">Designer Brand</span>
+              <span className="text-on-surface-variant font-semibold">{t('designerBrand')}</span>
               <span className="text-primary font-bold">{item.brand}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-on-surface-variant font-semibold">Fabric Composition</span>
+              <span className="text-on-surface-variant font-semibold">{t('fabricComposition')}</span>
               <span className="text-primary font-bold">{item.material}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-on-surface-variant font-semibold">Primary Color</span>
+              <span className="text-on-surface-variant font-semibold">{t('primaryColor')}</span>
               <span className="flex items-center gap-2 text-primary font-bold">
                 {item.color}
                 {item.colorHex && (
@@ -109,7 +110,7 @@ To highlight its ${item.material} weave, pair it with structured neutral coordin
               </span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-on-surface-variant font-semibold">Sizing Specs</span>
+              <span className="text-on-surface-variant font-semibold">{t('sizingSpecs')}</span>
               <span className="text-primary font-bold">{item.size || 'OS'}</span>
             </div>
           </div>
@@ -119,11 +120,10 @@ To highlight its ${item.material} weave, pair it with structured neutral coordin
             <div className="absolute inset-0 shimmer-bg opacity-20 pointer-events-none" />
             <div className="relative z-10 flex items-center gap-1.5">
               <span className="material-symbols-outlined filled text-primary text-base">auto_awesome</span>
-              <span className="text-[11px] font-bold text-primary uppercase tracking-widest">AI Styling Intelligence</span>
+              <span className="text-[11px] font-bold text-primary uppercase tracking-widest">{t('aiStylingIntelligence')}</span>
             </div>
             <p className="text-xs text-on-surface-variant leading-relaxed">
-              This {item.color.toLowerCase()} garment acts as an elegant canvas that complements your {user.skinTone} undertones.
-              Our computational fashion matrix suggests pairing this with higher contrast weights for maximum impact.
+              {t('stylingIntelligenceDesc', { color: item.color.toLowerCase(), skinTone: user.skinTone || '' })}
             </p>
           </div>
         </div>
@@ -134,7 +134,7 @@ To highlight its ${item.material} weave, pair it with structured neutral coordin
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
             <span className="material-symbols-outlined text-primary">auto_awesome</span>
-            <span className="text-xs font-bold text-primary uppercase tracking-widest">Lookbook AI Generation</span>
+            <span className="text-xs font-bold text-primary uppercase tracking-widest">{t('lookbookAiGeneration')}</span>
           </div>
           <p className="text-xs text-on-surface-variant leading-relaxed">
             Curate an active digital lookbook incorporating your {item.name}. We will synthesize the ensemble relative to current high-fashion aesthetics.
@@ -155,12 +155,12 @@ To highlight its ${item.material} weave, pair it with structured neutral coordin
             {isLookbookGenerating ? (
               <>
                 <span className="material-symbols-outlined animate-spin text-white text-xs">sync</span>
-                <span>Generating look...</span>
+                <span>{t('generatingLook')}</span>
               </>
             ) : (
               <>
                 <span className="material-symbols-outlined text-white text-xs">auto_awesome</span>
-                <span>Generate Lookbook</span>
+                <span>{t('generateLookbook')}</span>
               </>
             )}
           </button>
@@ -171,7 +171,7 @@ To highlight its ${item.material} weave, pair it with structured neutral coordin
       {complementaryItems.length > 0 && (
         <section className="space-y-4">
           <h4 className="font-display text-lg font-extrabold text-primary">
-            Perfect Closet Matches
+            {t('perfectClosetMatches')}
           </h4>
           <div className="grid grid-cols-2 gap-4">
             {complementaryItems.map((comp) => (

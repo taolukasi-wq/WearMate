@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useTranslation } from '../i18n';
 
 interface Entity {
   x: number;
@@ -38,6 +39,7 @@ interface Star {
 }
 
 export default function ShootingGame() {
+  const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number>(0);
@@ -445,18 +447,18 @@ export default function ShootingGame() {
       <div className="bg-surface-container-low rounded-3xl p-4 shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-xl font-bold text-on-surface">星际射手</h2>
-            <p className="text-sm text-on-surface-variant">使用 ← → 或 A/D 移动，空格射击</p>
+            <h2 className="text-xl font-bold text-on-surface">{t('gameTitle')}</h2>
+            <p className="text-sm text-on-surface-variant">{t('gameControls')}</p>
           </div>
           <div className="text-right">
             <div className="text-2xl font-black text-primary">{score}</div>
-            <div className="text-xs text-on-surface-variant">分数</div>
+            <div className="text-xs text-on-surface-variant">{t('gameScore')}</div>
           </div>
         </div>
 
         <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-on-surface">生命</span>
+            <span className="text-sm font-semibold text-on-surface">{t('gameLives')}</span>
             <div className="flex gap-1">
               {Array.from({ length: 3 }).map((_, i) => (
                 <span
@@ -469,7 +471,7 @@ export default function ShootingGame() {
             </div>
           </div>
           <div className="text-sm font-semibold text-on-surface">
-            等级 <span className="text-primary">{level}</span>
+            {t('gameLevel')} <span className="text-primary">{level}</span>
           </div>
         </div>
 
@@ -484,39 +486,39 @@ export default function ShootingGame() {
 
           {!started && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm text-white z-10">
-              <h3 className="text-3xl font-black mb-2 text-center">星际射手</h3>
+              <h3 className="text-3xl font-black mb-2 text-center">{t('gameTitle')}</h3>
               <p className="text-sm mb-6 text-center max-w-[240px]">
-                驾驶飞船，击退来袭的外星敌人！
+                {t('gameIntro')}
               </p>
               <button
                 type="button"
                 onClick={handleStart}
                 className="px-8 py-3 bg-primary text-on-primary rounded-full font-bold text-lg shadow-lg hover:scale-105 transition-transform cursor-pointer"
               >
-                开始游戏
+                {t('gameStart')}
               </button>
             </div>
           )}
 
           {started && gameOver && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm text-white z-10">
-              <h3 className="text-3xl font-black mb-2">游戏结束</h3>
-              <p className="text-xl mb-2">最终得分: {score}</p>
-              <p className="text-sm text-white/70 mb-6"> reached level {level}</p>
+              <h3 className="text-3xl font-black mb-2">{t('gameOver')}</h3>
+              <p className="text-xl mb-2">{t('finalScore')}: {score}</p>
+              <p className="text-sm text-white/70 mb-6">{t('reachedLevel', { level })}</p>
               <button
                 type="button"
                 onClick={handleRestart}
                 className="px-8 py-3 bg-primary text-on-primary rounded-full font-bold text-lg shadow-lg hover:scale-105 transition-transform cursor-pointer"
               >
-                重新开始
+                {t('gameRestart')}
               </button>
             </div>
           )}
 
           {started && paused && !gameOver && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm text-white z-10">
-              <h3 className="text-2xl font-black mb-4">已暂停</h3>
-              <p className="text-sm text-white/70">按 Esc 继续</p>
+              <h3 className="text-2xl font-black mb-4">{t('paused')}</h3>
+              <p className="text-sm text-white/70">{t('pressEscToContinue')}</p>
             </div>
           )}
         </div>
@@ -528,7 +530,7 @@ export default function ShootingGame() {
             disabled={!started || gameOver}
             className="px-6 py-2 bg-surface-container rounded-full text-sm font-semibold text-on-surface hover:bg-surface-container-high disabled:opacity-40 transition-colors cursor-pointer"
           >
-            {paused ? '继续' : '暂停'}
+            {paused ? t('resume') : t('pause')}
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Item, UserProfile } from '../types';
+import { useTranslation } from '../i18n';
 
 interface ScannerTabProps {
   user: UserProfile;
@@ -8,6 +9,7 @@ interface ScannerTabProps {
 }
 
 export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: ScannerTabProps) {
+  const { t } = useTranslation();
   const [scanType, setScanType] = useState<'item' | 'profile'>('item');
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -47,7 +49,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
       }
     } catch (err: any) {
       console.warn('Camera could not start (likely running inside sandboxed frame):', err);
-      setCameraError('Camera not available. Drag & drop or choose a demo photo.');
+      setCameraError(t('cameraNotAvailable'));
     }
   };
 
@@ -78,7 +80,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
         handleTriggerScan(dataUrl);
       }
     } catch (err) {
-      alert('Capture error. Using fallback photo instead.');
+      alert(t('captureError'));
       handleUseDemo();
     }
   };
@@ -198,7 +200,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
       image: uploadedImage || demoImages.item.url,
       isFavorite: true,
     });
-    alert(`${scannedResult.brand} ${scannedResult.name} successfully added to your closet!`);
+    alert(`${scannedResult.brand} ${scannedResult.name} ${t('addToCloset')}`);
     handleReset();
   };
 
@@ -210,7 +212,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
       bodyType: scannedResult.bodyType,
       recommendationColors: scannedResult.paletteColors,
     });
-    alert(`Personal Atelier styling profile updated to ${scannedResult.skinTone} & ${scannedResult.bodyType}!`);
+    alert(`${t('yourStyleProfile')}: ${scannedResult.skinTone} & ${scannedResult.bodyType}`);
     handleReset();
   };
 
@@ -234,7 +236,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
             scanType === 'item' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
           }`}
         >
-          Scan Clothing Item
+          {t('scanClothingItem')}
         </button>
         <button
           onClick={() => {
@@ -245,7 +247,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
             scanType === 'profile' ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-primary'
           }`}
         >
-          Scan Style Profile
+          {t('scanStyleProfile')}
         </button>
       </nav>
 
@@ -270,8 +272,8 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
             <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-4 bg-neutral-900">
               <span className="material-symbols-outlined text-outline-variant text-5xl">cloud_upload</span>
               <div>
-                <p className="text-white text-sm font-bold">Drag & Drop Image Here</p>
-                <p className="text-xs text-outline-variant mt-1">or click "Upload File" to scan from device</p>
+                <p className="text-white text-sm font-bold">{t('dragDropImage')}</p>
+                <p className="text-xs text-outline-variant mt-1">{t('uploadFileHint')}</p>
               </div>
             </div>
           )}
@@ -303,14 +305,14 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
             </div>
             <div className="bg-primary-container/90 text-on-primary-container px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg animate-pulse">
               <span className="material-symbols-outlined text-sm filled text-white">smart_toy</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-white">AI Active</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-white">{t('aiActive')}</span>
             </div>
           </div>
 
           {/* Viewfinder Bottom guidelines text */}
           <div className="relative z-10 text-center">
             <p className="inline-block bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-sm border border-white/10">
-              Align {scanType === 'item' ? 'clothing item' : 'silhouette or face'} within the frame
+              {scanType === 'item' ? t('alignItem') : t('alignProfile')}
             </p>
           </div>
 
@@ -346,7 +348,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
               onClick={handleUseDemo}
               className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-[11px] font-bold tracking-wide hover:bg-white/20 transition-all active:scale-95 cursor-pointer"
             >
-              Use Demo Photo
+              {t('useDemoPhoto')}
             </button>
           </div>
         </section>
@@ -365,9 +367,9 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
               </span>
             </div>
             <div className="space-y-1">
-              <h4 className="font-display font-bold text-white text-base">Analyzing Aesthetics</h4>
+              <h4 className="font-display font-bold text-white text-base">{t('analyzingAesthetics')}</h4>
               <p className="text-xs text-outline-variant font-medium tracking-wide animate-pulse">
-                {scanType === 'item' ? 'Detecting weave, fabric, brand & hue...' : 'Mapping silhouette & undertone profile...'}
+                {scanType === 'item' ? t('detectingItem') : t('mappingProfile')}
               </p>
             </div>
           </div>
@@ -380,7 +382,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
             <div className="relative rounded-3xl overflow-hidden aspect-[16/10] bg-surface-container shadow-md">
               <img src={uploadedImage || ''} alt="Scanned outfit" className="w-full h-full object-cover" />
               <div className="absolute top-4 right-4 bg-primary-container text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-md">
-                Scan Confirmed
+                {t('scanConfirmed')}
               </div>
             </div>
 
@@ -389,7 +391,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
               <div className="space-y-6">
                 <div>
                   <p className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
-                    {scannedResult.brand} Spec Sheet
+                    {scannedResult.brand} {t('specSheet')}
                   </p>
                   <h3 className="font-display text-2xl font-extrabold text-primary mt-1">
                     {scannedResult.name}
@@ -399,15 +401,15 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
                 {/* Specifications Card */}
                 <div className="p-6 bg-surface-container-low rounded-2xl border border-outline-variant/30 shadow-sm">
                   <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mb-4">
-                    Specifications
+                    {t('specifications')}
                   </p>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center border-b border-outline-variant/10 pb-2 text-sm">
-                      <span className="text-on-surface-variant font-medium">Material / Fabric</span>
+                      <span className="text-on-surface-variant font-medium">{t('materialFabric')}</span>
                       <span className="text-primary font-bold">{scannedResult.material}</span>
                     </div>
                     <div className="flex justify-between items-center border-b border-outline-variant/10 pb-2 text-sm">
-                      <span className="text-on-surface-variant font-medium">Primary Color</span>
+                      <span className="text-on-surface-variant font-medium">{t('primaryColor')}</span>
                       <span className="flex items-center gap-2 text-primary font-bold">
                         {scannedResult.color}
                         {scannedResult.colorHex && (
@@ -419,7 +421,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-on-surface-variant font-medium">Clothing Category</span>
+                      <span className="text-on-surface-variant font-medium">{t('clothingCategory')}</span>
                       <span className="text-primary font-bold uppercase tracking-wider text-xs">
                         {scannedResult.category}
                       </span>
@@ -457,7 +459,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
                     onClick={handleReset}
                     className="flex-1 py-4 border border-outline-variant rounded-full font-display font-semibold text-xs text-on-surface-variant hover:bg-surface-container-low active:scale-95 transition-all cursor-pointer text-center"
                   >
-                    Scan Again
+                    {t('scanAgain')}
                   </button>
                   <button
                     type="button"
@@ -465,7 +467,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
                     className="flex-1 py-4 bg-primary text-white rounded-full font-display font-semibold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer shadow-lg shadow-primary/10"
                   >
                     <span className="material-symbols-outlined text-white text-base">checkroom</span>
-                    Add to Closet
+                    {t('addToCloset')}
                   </button>
                 </div>
               </div>
@@ -474,10 +476,10 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
               <div className="space-y-6">
                 <div>
                   <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest animate-pulse">
-                    AI Scan Analysis Finished
+                    {t('aiScanAnalysisFinished')}
                   </span>
                   <h3 className="font-display text-2xl font-extrabold text-primary mt-1">
-                    Detected Styling Profile
+                    {t('detectedStylingProfile')}
                   </h3>
                 </div>
 
@@ -494,7 +496,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
                       )}
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Skin Tone</p>
+                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">{t('skinTone')}</p>
                       <p className="font-display text-lg font-extrabold text-primary">{scannedResult.skinTone}</p>
                     </div>
                   </div>
@@ -503,7 +505,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
                   <div className="bg-surface-container-low p-4 rounded-3xl border border-outline-variant/30 flex flex-col gap-3 shadow-sm hover:scale-[1.01] transition-transform">
                     <span className="material-symbols-outlined text-primary text-lg">accessibility_new</span>
                     <div>
-                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Body Type</p>
+                      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">{t('bodyType')}</p>
                       <p className="font-display text-lg font-extrabold text-primary">{scannedResult.bodyType}</p>
                     </div>
                   </div>
@@ -513,7 +515,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
                 <div className="bg-primary/5 p-5 rounded-3xl border border-primary/10 space-y-4">
                   <div>
                     <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
-                      Color Palette Recommendation
+                      {t('colorPaletteRecommendation')}
                     </span>
                     <h4 className="font-display text-lg font-extrabold text-primary mt-1">
                       {scannedResult.recommendationPaletteName}
@@ -548,14 +550,14 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
                     onClick={handleReset}
                     className="flex-1 py-4 border border-outline-variant rounded-full font-display font-semibold text-xs text-on-surface-variant hover:bg-surface-container-low active:scale-95 transition-all cursor-pointer text-center"
                   >
-                    Scan Again
+                    {t('scanAgain')}
                   </button>
                   <button
                     type="button"
                     onClick={handleConfirmProfile}
                     className="flex-1 py-4 bg-primary text-white rounded-full font-display font-semibold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer shadow-lg shadow-primary/10 animate-pulse"
                   >
-                    Confirm & Match Style
+                    {t('confirmMatchStyle')}
                   </button>
                 </div>
               </div>

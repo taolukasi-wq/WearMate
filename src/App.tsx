@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { INITIAL_ITEMS, INITIAL_USER } from './data';
+import { getInitialItems, getInitialUser } from './data';
 import { Item, UserProfile } from './types';
+import { I18nProvider, LanguageSwitcher, useTranslation } from './i18n';
 import AuthScreen from './components/AuthScreen';
 import HomeTab from './components/HomeTab';
 import ClosetTab from './components/ClosetTab';
@@ -10,10 +11,19 @@ import ProductDetail from './components/ProductDetail';
 const AUTH_TOKEN_KEY = 'digitalatelier_auth_token';
 
 export default function App() {
+  return (
+    <I18nProvider>
+      <AppContent />
+    </I18nProvider>
+  );
+}
+
+function AppContent() {
+  const { t, language } = useTranslation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [user, setUser] = useState<UserProfile>(INITIAL_USER);
-  const [items, setItems] = useState<Item[]>(INITIAL_ITEMS);
+  const [user, setUser] = useState<UserProfile>(getInitialUser(language));
+  const [items, setItems] = useState<Item[]>(getInitialItems(language));
   const [activeTab, setActiveTab] = useState<'home' | 'closet' | 'scan'>('home');
   const [viewingItem, setViewingItem] = useState<Item | null>(null);
 
@@ -64,7 +74,8 @@ export default function App() {
     }
     localStorage.removeItem(AUTH_TOKEN_KEY);
     setIsLoggedIn(false);
-    setUser(INITIAL_USER);
+    setUser(getInitialUser(language));
+    setItems(getInitialItems(language));
   };
 
   const handleAddItem = (newItem: Item) => {
@@ -111,12 +122,13 @@ export default function App() {
               DigitalAtelier
             </h1>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <button
               type="button"
               onClick={handleLogout}
               className="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-all cursor-pointer"
-              title="Logout"
+              title={t('logout')}
             >
               <span className="material-symbols-outlined text-lg">logout</span>
             </button>
@@ -178,7 +190,7 @@ export default function App() {
           <span className={`material-symbols-outlined text-2xl ${activeTab === 'home' && !viewingItem ? 'filled text-primary' : 'text-[#626374]'}`}>
             home
           </span>
-          <span className={`text-[10px] font-bold tracking-wide ${activeTab === 'home' && !viewingItem ? 'text-primary' : 'text-[#626374]'}`}>Home</span>
+          <span className={`text-[10px] font-bold tracking-wide ${activeTab === 'home' && !viewingItem ? 'text-primary' : 'text-[#626374]'}`}>{t('home')}</span>
         </button>
 
         <button
@@ -194,7 +206,7 @@ export default function App() {
           <span className={`material-symbols-outlined text-2xl ${activeTab === 'closet' && !viewingItem ? 'filled text-primary' : 'text-[#626374]'}`}>
             checkroom
           </span>
-          <span className={`text-[10px] font-bold tracking-wide ${activeTab === 'closet' && !viewingItem ? 'text-primary' : 'text-[#626374]'}`}>Closet</span>
+          <span className={`text-[10px] font-bold tracking-wide ${activeTab === 'closet' && !viewingItem ? 'text-primary' : 'text-[#626374]'}`}>{t('closet')}</span>
         </button>
 
         <button
@@ -210,7 +222,7 @@ export default function App() {
           <span className={`material-symbols-outlined text-2xl ${activeTab === 'scan' && !viewingItem ? 'filled text-primary' : 'text-[#626374]'}`}>
             document_scanner
           </span>
-          <span className={`text-[10px] font-bold tracking-wide ${activeTab === 'scan' && !viewingItem ? 'text-primary' : 'text-[#626374]'}`}>AI Scan</span>
+          <span className={`text-[10px] font-bold tracking-wide ${activeTab === 'scan' && !viewingItem ? 'text-primary' : 'text-[#626374]'}`}>{t('aiScan')}</span>
         </button>
       </nav>
     </div>
