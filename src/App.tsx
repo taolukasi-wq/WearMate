@@ -6,6 +6,7 @@ import AuthScreen from './components/AuthScreen';
 import HomeTab from './components/HomeTab';
 import ClosetTab from './components/ClosetTab';
 import ScannerTab from './components/ScannerTab';
+import OutfitGeneratorTab from './components/OutfitGeneratorTab';
 import ProductDetail from './components/ProductDetail';
 
 const AUTH_TOKEN_KEY = 'digitalatelier_auth_token';
@@ -24,7 +25,7 @@ function AppContent() {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [user, setUser] = useState<UserProfile>(getInitialUser(language));
   const [items, setItems] = useState<Item[]>(getInitialItems(language));
-  const [activeTab, setActiveTab] = useState<'home' | 'closet' | 'scan'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'closet' | 'scan' | 'outfit'>('home');
   const [viewingItem, setViewingItem] = useState<Item | null>(null);
 
   useEffect(() => {
@@ -171,6 +172,9 @@ function AppContent() {
                 onAddItem={handleAddItem}
               />
             )}
+            {activeTab === 'outfit' && (
+              <OutfitGeneratorTab user={user} items={items} />
+            )}
           </>
         )}
       </main>
@@ -223,6 +227,22 @@ function AppContent() {
             document_scanner
           </span>
           <span className={`text-[10px] font-bold tracking-wide ${activeTab === 'scan' && !viewingItem ? 'text-primary' : 'text-[#626374]'}`}>{t('aiScan')}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setViewingItem(null);
+            setActiveTab('outfit');
+          }}
+          className={`flex flex-col items-center gap-1 transition-all cursor-pointer ${
+            activeTab === 'outfit' && !viewingItem ? 'text-primary scale-105' : 'text-on-surface-variant hover:text-primary'
+          }`}
+        >
+          <span className={`material-symbols-outlined text-2xl ${activeTab === 'outfit' && !viewingItem ? 'filled text-primary' : 'text-[#626374]'}`}>
+            auto_awesome
+          </span>
+          <span className={`text-[10px] font-bold tracking-wide ${activeTab === 'outfit' && !viewingItem ? 'text-primary' : 'text-[#626374]'}`}>{t('outfitGenerator')}</span>
         </button>
       </nav>
     </div>

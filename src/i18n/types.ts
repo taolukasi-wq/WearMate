@@ -89,6 +89,19 @@ export interface Translations {
   ensembleBreakdown: string;
   wearOutfit: string;
   lookApplied: string;
+  outfitGenerator: string;
+  outfitGeneratorDesc: string;
+  uploadFrontalPhoto: string;
+  uploadFrontalPhotoDesc: string;
+  selectPhoto: string;
+  uploading: string;
+  changePhoto: string;
+  generateOutfitVisual: string;
+  generatingOutfitVisual: string;
+  nanoBananaGenerating: string;
+  outfitResult: string;
+  generateAgain: string;
+  loginRequired: string;
 
   // Closet
   myCloset: string;
