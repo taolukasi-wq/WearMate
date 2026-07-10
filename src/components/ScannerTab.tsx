@@ -16,6 +16,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
   const [isScanning, setIsScanning] = useState(false);
   const [scannedResult, setScannedResult] = useState<any | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [savedImagePath, setSavedImagePath] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -133,6 +134,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
   const handleTriggerScan = async (imageSrc: string) => {
     setIsScanning(true);
     setScannedResult(null);
+    setSavedImagePath(null);
 
     const apiEndpoint = scanType === 'item' ? '/api/scan-item' : '/api/analyze-profile';
 
@@ -141,12 +143,15 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageSrc }),
+        body: JSON.stringify({ image: imageSrc, userId: user.id }),
       });
 
       if (!response.ok) throw new Error('API server returned error');
       const data = await response.json();
       setScannedResult(data);
+      if (data.savedImagePath) {
+        setSavedImagePath(data.savedImagePath);
+      }
     } catch (err: any) {
       console.error(err);
       // Fallback with highly curated mockups matching exact design spec
@@ -219,6 +224,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
   const handleReset = () => {
     setScannedResult(null);
     setUploadedImage(null);
+    setSavedImagePath(null);
     setIsScanning(false);
     startCamera();
   };
@@ -385,6 +391,15 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
                 {t('scanConfirmed')}
               </div>
             </div>
+
+            {savedImagePath && (
+              <div className="p-3 bg-surface-container-low rounded-xl border border-outline-variant/30">
+                <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">
+                  {t('imageSavedTo')}
+                </p>
+                <p className="text-xs text-primary font-medium break-all">{savedImagePath}</p>
+              </div>
+            )}
 
             {scanType === 'item' ? (
               /* Outcome for Clothing Item */

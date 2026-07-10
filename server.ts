@@ -18,9 +18,39 @@ interface UserRecord extends UserProfile {
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const IMAGES_DIR = path.join(DATA_DIR, 'images');
 
 let users: UserRecord[] = [];
 const sessions = new Map<string, string>(); // token -> userId
+
+async function saveImage(
+  userId: string,
+  type: 'closet' | 'profile',
+  imageData: string
+): Promise<{ filePath: string; relativePath: string }> {
+  const userDir = path.join(IMAGES_DIR, userId, type);
+  await fs.mkdir(userDir, { recursive: true });
+
+  let base64Data = imageData;
+  if (imageData.startsWith('data:')) {
+    const matches = imageData.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.*)$/);
+    if (matches && matches.length === 3) {
+      base64Data = matches[2];
+    }
+  }
+
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).slice(2, 8);
+  const fileName = `${timestamp}-${random}.jpg`;
+  const filePath = path.join(userDir, fileName);
+
+  await fs.writeFile(filePath, Buffer.from(base64Data, 'base64'));
+
+  return {
+    filePath,
+    relativePath: path.join('data', 'images', userId, type, fileName),
+  };
+}
 
 async function loadUsers(): Promise<void> {
   try {
@@ -81,14 +111,20 @@ async function startServer() {
   // API Route: Scan an item image to extract fashion specifications
   app.post('/api/scan-item', async (req: Request, res: Response): Promise<void> => {
     try {
-      if (!ai) {
-        res.status(500).json({ error: 'Gemini API client is not initialized.' });
+      const { image, userId } = req.body;
+      if (!image) {
+        res.status(400).json({ error: 'Missing image parameter.' });
         return;
       }
 
-      const { image } = req.body;
-      if (!image) {
-        res.status(400).json({ error: 'Missing image parameter.' });
+      let savedImagePath: string | undefined;
+      if (userId) {
+        const saved = await saveImage(userId, 'closet', image);
+        savedImagePath = saved.relativePath;
+      }
+
+      if (!ai) {
+        res.status(500).json({ error: 'Gemini API client is not initialized.', savedImagePath });
         return;
       }
 
@@ -177,7 +213,11 @@ async function startServer() {
       });
 
       const responseText = response.text || '{}';
-      res.json(JSON.parse(responseText));
+      const result = JSON.parse(responseText);
+      if (savedImagePath) {
+        result.savedImagePath = savedImagePath;
+      }
+      res.json(result);
     } catch (error: any) {
       console.error('Error in /api/scan-item:', error);
       res.status(500).json({ error: error.message || 'Failed to scan item.' });
@@ -187,14 +227,20 @@ async function startServer() {
   // API Route: Analyze personal aesthetics (skin tone, undertone, body shape) from a selfie or photo
   app.post('/api/analyze-profile', async (req: Request, res: Response): Promise<void> => {
     try {
-      if (!ai) {
-        res.status(500).json({ error: 'Gemini API client is not initialized.' });
+      const { image, userId } = req.body;
+      if (!image) {
+        res.status(400).json({ error: 'Missing image parameter.' });
         return;
       }
 
-      const { image } = req.body;
-      if (!image) {
-        res.status(400).json({ error: 'Missing image parameter.' });
+      let savedImagePath: string | undefined;
+      if (userId) {
+        const saved = await saveImage(userId, 'profile', image);
+        savedImagePath = saved.relativePath;
+      }
+
+      if (!ai) {
+        res.status(500).json({ error: 'Gemini API client is not initialized.', savedImagePath });
         return;
       }
 
@@ -270,7 +316,11 @@ async function startServer() {
       });
 
       const responseText = response.text || '{}';
-      res.json(JSON.parse(responseText));
+      const result = JSON.parse(responseText);
+      if (savedImagePath) {
+        result.savedImagePath = savedImagePath;
+      }
+      res.json(result);
     } catch (error: any) {
       console.error('Error in /api/analyze-profile:', error);
       res.status(500).json({ error: error.message || 'Failed to analyze profile.' });

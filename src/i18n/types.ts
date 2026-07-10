@@ -152,6 +152,7 @@ export interface Translations {
   alignItem: string;
   alignProfile: string;
   scanConfirmed: string;
+  imageSavedTo: string;
   specSheet: string;
   specifications: string;
   materialFabric: string;
