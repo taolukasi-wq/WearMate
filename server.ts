@@ -48,7 +48,7 @@ async function saveImage(
 
   return {
     filePath,
-    relativePath: path.join('data', 'images', userId, type, fileName),
+    relativePath: `/images/${userId}/${type}/${fileName}`,
   };
 }
 
@@ -518,6 +518,9 @@ The second note must relate to weather adaptability and practical lifestyle eleg
 
     res.json({ user: sanitizeUser(user) });
   });
+
+  // Static file serving for user-uploaded images
+  app.use('/images', express.static(IMAGES_DIR));
 
   // Health check
   app.get('/api/health', (req, res) => {
