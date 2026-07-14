@@ -9,7 +9,7 @@ interface AuthScreenProps {
 export default function AuthScreen({ onLogin }: AuthScreenProps) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
-  const [email, setEmail] = useState('style@digitalatelier.com');
+  const [email, setEmail] = useState('style@wearmate.app');
   const [password, setPassword] = useState('password123');
   const [fullName, setFullName] = useState('Julian');
   const [isLoading, setIsLoading] = useState(false);
@@ -80,7 +80,7 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
           {/* Brand Header */}
           <div className="text-center mb-10">
             <h2 className="font-display text-4xl font-extrabold tracking-tighter text-primary mb-2">
-              DigitalAtelier
+              {t('appName')}
             </h2>
             <p className="font-sans text-sm font-medium text-on-surface-variant">
               {t('tagline')}

@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useEffect, useState } from 'react';
 import { Language } from './types';
 import { translations } from './translations';
 
-const STORAGE_KEY = 'digitalatelier_language';
+const STORAGE_KEY = 'wearmate_language';
 
 interface I18nContextValue {
   language: Language;

@@ -9,12 +9,93 @@
     "skinToneColor": "#F5E6DA",
     "bodyType": "Hourglass",
     "recommendationColors": [
-      { "name": "Sage Green", "hex": "#A5C9CA" },
-      { "name": "Off White", "hex": "#E7F6F2" },
-      { "name": "Light Gray", "hex": "#D8D8D8" },
-      { "name": "Mid Gray", "hex": "#B2B2B2" },
-      { "name": "Slate Gray", "hex": "#395B64" }
+      {
+        "name": "Sage Green",
+        "hex": "#A5C9CA"
+      },
+      {
+        "name": "Off White",
+        "hex": "#E7F6F2"
+      },
+      {
+        "name": "Light Gray",
+        "hex": "#D8D8D8"
+      },
+      {
+        "name": "Mid Gray",
+        "hex": "#B2B2B2"
+      },
+      {
+        "name": "Slate Gray",
+        "hex": "#395B64"
+      }
     ],
     "createdAt": "2026-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "usr-1783689575208",
+    "name": "lucky lu",
+    "email": "style@digitala.dfg",
+    "password": "egfcejfn",
+    "avatar": "",
+    "skinTone": "Cool Ivory",
+    "skinToneColor": "#F5E6DA",
+    "bodyType": "Hourglass",
+    "recommendationColors": [
+      {
+        "name": "Sage Green",
+        "hex": "#A5C9CA"
+      },
+      {
+        "name": "Off White",
+        "hex": "#E7F6F2"
+      },
+      {
+        "name": "Light Gray",
+        "hex": "#D8D8D8"
+      },
+      {
+        "name": "Mid Gray",
+        "hex": "#B2B2B2"
+      },
+      {
+        "name": "Slate Gray",
+        "hex": "#395B64"
+      }
+    ],
+    "createdAt": "2026-07-10T13:19:35.208Z"
+  },
+  {
+    "id": "usr-1784014220474",
+    "name": "Julian",
+    "email": "style@wearmate.app",
+    "password": "password123",
+    "avatar": "",
+    "skinTone": "Cool Ivory",
+    "skinToneColor": "#F5E6DA",
+    "bodyType": "Hourglass",
+    "recommendationColors": [
+      {
+        "name": "Sage Green",
+        "hex": "#A5C9CA"
+      },
+      {
+        "name": "Off White",
+        "hex": "#E7F6F2"
+      },
+      {
+        "name": "Light Gray",
+        "hex": "#D8D8D8"
+      },
+      {
+        "name": "Mid Gray",
+        "hex": "#B2B2B2"
+      },
+      {
+        "name": "Slate Gray",
+        "hex": "#395B64"
+      }
+    ],
+    "createdAt": "2026-07-14T07:30:20.474Z"
   }
 ]

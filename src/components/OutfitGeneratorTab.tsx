@@ -8,7 +8,7 @@ interface OutfitGeneratorTabProps {
 }
 
 export default function OutfitGeneratorTab({ user, items }: OutfitGeneratorTabProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [step, setStep] = useState<'photo' | 'select' | 'generating' | 'result'>('photo');
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [profilePhotoPath, setProfilePhotoPath] = useState<string | null>(null);
@@ -79,6 +79,7 @@ export default function OutfitGeneratorTab({ user, items }: OutfitGeneratorTabPr
           topImage: selectedTop?.image,
           bottomImage: selectedBottom?.image,
           shoesImage: selectedShoes?.image,
+          language,
         }),
       });
       const data = await response.json();

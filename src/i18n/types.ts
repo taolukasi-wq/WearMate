@@ -179,6 +179,8 @@ export interface Translations {
   confirmMatchStyle: string;
   cameraNotAvailable: string;
   captureError: string;
+  takePhoto: string;
+  flipCamera: string;
 
   // Product
   productDetail: string;

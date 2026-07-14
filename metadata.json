@@ -1,5 +1,5 @@
 {
-  "name": "DigitalAtelier",
+  "name": "WearMate",
   "description": "An AI-powered smart closet and virtual styling assistant that curates perfect outfits for different occasions, matches style with skin tone, weather, and wardrobe items.",
   "requestFramePermissions": ["camera"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

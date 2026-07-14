@@ -9,7 +9,7 @@ import ScannerTab from './components/ScannerTab';
 import OutfitGeneratorTab from './components/OutfitGeneratorTab';
 import ProductDetail from './components/ProductDetail';
 
-const AUTH_TOKEN_KEY = 'digitalatelier_auth_token';
+const AUTH_TOKEN_KEY = 'wearmate_auth_token';
 
 export default function App() {
   return (
@@ -120,7 +120,7 @@ function AppContent() {
         <div className="max-w-xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <h1 className="font-display text-2xl font-extrabold tracking-tighter text-primary">
-              DigitalAtelier
+              {t('appName')}
             </h1>
           </div>
           <div className="flex items-center gap-3">

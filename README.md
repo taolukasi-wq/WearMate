@@ -1,11 +1,11 @@
 <div align="center">
-  <h1>WearMate / DigitalAtelier</h1>
+  <h1>WearMate</h1>
   <p>AI 驱动的个人衣橱管理与穿搭推荐应用</p>
 </div>
 
 ## 简介
 
-WearMate（前端品牌名为 DigitalAtelier）是一款 AI 驱动的时尚衣橱管理应用。用户可以拍照上传衣物，AI 自动识别品类、材质、颜色并生成单品档案；通过上传个人照片分析肤色与体型，获得个性化的配色与穿搭建议；还可以基于已有衣橱生成不同场景的智能搭配方案。
+WearMate 是一款 AI 驱动的时尚衣橱管理应用。用户可以拍照上传衣物，AI 自动识别品类、材质、颜色并生成单品档案；通过上传个人照片分析肤色与体型，获得个性化的配色与穿搭建议；还可以基于已有衣橱生成不同场景的智能搭配方案。
 
 本项目采用 **React + TypeScript + Vite** 构建前端，**Express** 提供后端 API，数据以 **mock JSON** 形式本地持久化。
 
@@ -59,7 +59,7 @@ npm run dev
 
  mock 数据中已预置一个默认用户，方便直接体验：
 
-- **邮箱**：`style@digitalatelier.com`
+- **邮箱**：`style@wearmate.app`
 - **密码**：`password123`
 
 你也可以在登录页切换到 **Create Account** 注册新用户，新用户会自动写入 `data/users.json`。

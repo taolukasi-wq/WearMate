@@ -2,7 +2,7 @@ import { Language, Translations } from './types';
 
 export const translations: Record<Language, Translations> = {
   'zh-CN': {
-    appName: 'DigitalAtelier',
+    appName: 'WearMate',
     tagline: '用 AI 驱动的策展，提升你的风格',
     home: '首页',
     closet: '衣橱',
@@ -175,6 +175,8 @@ export const translations: Record<Language, Translations> = {
     confirmMatchStyle: '确认并匹配风格',
     cameraNotAvailable: '摄像头不可用。请拖拽图片或选择示例照片。',
     captureError: '拍摄出错，改用示例照片。',
+    takePhoto: '拍照',
+    flipCamera: '翻转镜头',
 
     productDetail: '单品详情',
     backToCloset: '返回衣橱',
@@ -223,7 +225,7 @@ export const translations: Record<Language, Translations> = {
     pause: '暂停',
   },
   en: {
-    appName: 'DigitalAtelier',
+    appName: 'WearMate',
     tagline: 'Elevate your style with AI-powered curation',
     home: 'Home',
     closet: 'Closet',
@@ -253,7 +255,7 @@ export const translations: Record<Language, Translations> = {
     email: 'Email Address',
     password: 'Password',
     placeholderFullName: 'e.g. Alexander McQueen',
-    placeholderEmail: 'e.g. style@digitalatelier.com',
+    placeholderEmail: 'e.g. style@wearmate.app',
     placeholderPassword: 'Enter your password',
     forgotPassword: 'Forgot?',
     orContinueWith: 'Or continue with',
@@ -396,6 +398,8 @@ export const translations: Record<Language, Translations> = {
     confirmMatchStyle: 'Confirm & Match Style',
     cameraNotAvailable: 'Camera not available. Drag & drop or choose a demo photo.',
     captureError: 'Capture error. Using fallback photo instead.',
+    takePhoto: 'Take Photo',
+    flipCamera: 'Flip Camera',
 
     productDetail: 'Product Detail',
     backToCloset: 'Back to Closet',

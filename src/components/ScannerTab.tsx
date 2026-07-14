@@ -9,10 +9,11 @@ interface ScannerTabProps {
 }
 
 export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: ScannerTabProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [scanType, setScanType] = useState<'item' | 'profile'>('item');
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraFacing, setCameraFacing] = useState<'environment' | 'user'>('environment');
   const [isScanning, setIsScanning] = useState(false);
   const [scannedResult, setScannedResult] = useState<any | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -41,7 +42,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
     setCameraError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: 640, height: 480 },
+        video: { facingMode: cameraFacing, width: 640, height: 480 },
         audio: false,
       });
       setCameraStream(stream);
@@ -54,6 +55,29 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
     }
   };
 
+  const toggleCameraFacing = () => {
+    const nextFacing = cameraFacing === 'environment' ? 'user' : 'environment';
+    setCameraFacing(nextFacing);
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((track) => track.stop());
+      setCameraStream(null);
+    }
+    setTimeout(() => {
+      navigator.mediaDevices
+        .getUserMedia({ video: { facingMode: nextFacing, width: 640, height: 480 }, audio: false })
+        .then((stream) => {
+          setCameraStream(stream);
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        })
+        .catch((err) => {
+          console.warn('Camera could not switch:', err);
+          setCameraError(t('cameraNotAvailable'));
+        });
+    }, 50);
+  };
+
   const stopCamera = () => {
     if (cameraStream) {
       cameraStream.getTracks().forEach((track) => track.stop());
@@ -64,7 +88,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
   useEffect(() => {
     startCamera();
     return () => stopCamera();
-  }, []);
+  }, [cameraFacing]);
 
   const handleCapture = () => {
     if (!videoRef.current) return;
@@ -143,7 +167,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageSrc, userId: user.id }),
+        body: JSON.stringify({ image: imageSrc, userId: user.id, language }),
       });
 
       if (!response.ok) throw new Error('API server returned error');
@@ -308,6 +332,13 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
               <button onClick={() => startCamera()} className="hover:text-primary transition-colors">
                 <span className="material-symbols-outlined text-lg">hdr_on</span>
               </button>
+              <button
+                onClick={toggleCameraFacing}
+                className="hover:text-primary transition-colors"
+                title={t('flipCamera')}
+              >
+                <span className="material-symbols-outlined text-lg">flip_camera_ios</span>
+              </button>
             </div>
             <div className="bg-primary-container/90 text-on-primary-container px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg animate-pulse">
               <span className="material-symbols-outlined text-sm filled text-white">smart_toy</span>
@@ -438,7 +469,7 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-on-surface-variant font-medium">{t('clothingCategory')}</span>
                       <span className="text-primary font-bold uppercase tracking-wider text-xs">
-                        {scannedResult.category}
+                        {t(scannedResult.category)}
                       </span>
                     </div>
                   </div>

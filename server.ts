@@ -82,6 +82,158 @@ function sanitizeUser(user: UserRecord): UserProfile {
   return profile;
 }
 
+function getLanguageInstruction(language?: string): string {
+  return language === 'zh-CN' || language === 'zh'
+    ? '请用中文（简体）回答。所有文本字段（name 单品名称、brand 品牌、material 材质、color 颜色、curationTitle1/2 策展标题、curationContent1/2 策展内容）都必须是中文。category 字段值必须是 tops、bottoms、shoes、accessories 之一，不要翻译。'
+    : 'Please respond in English. All text fields (name, brand, material, color, curationTitle1/2, curationContent1/2) must be in English. The category field must be one of: tops, bottoms, shoes, accessories.';
+}
+
+function getItemScanSchema(language?: string) {
+  const isZh = language === 'zh-CN' || language === 'zh';
+  return {
+    type: Type.OBJECT,
+    properties: {
+      name: {
+        type: Type.STRING,
+        description: isZh
+          ? '单品的中文描述名称，例如：结构化粗花呢夹克、真丝吊带裙、小牛皮乐福鞋。'
+          : 'The descriptive product name of the item, e.g. Structured Tweed Jacket, Silk Slip Dress, Calfskin Loafers.',
+      },
+      brand: {
+        type: Type.STRING,
+        description: isZh
+          ? '推荐一个与该风格匹配的奢侈或时尚品牌中文名称（若无法识别可用英文原名），例如：思琳、普拉达、The Row、圣罗兰。'
+          : 'Suggest a luxury or fashion-forward brand that matches this style (e.g. Theory, Celine, The Row, Prada, Saint Laurent, Gucci, etc.) if not clearly visible.',
+      },
+      category: {
+        type: Type.STRING,
+        description: isZh
+          ? '必须是以下之一：tops（上装）、bottoms（下装）、shoes（鞋履）、accessories（配饰）。返回值只能是 tops、bottoms、shoes、accessories 之一。'
+          : 'Must be one of: tops, bottoms, shoes, accessories.',
+      },
+      material: {
+        type: Type.STRING,
+        description: isZh
+          ? '材质或面料成分中文，例如：100% 初剪羊毛、高级真丝双绉、Togo 小牛皮、日本丹宁。'
+          : 'The likely material or fabric composition, e.g. 100% Virgin Wool, Premium Silk Crepe, Togo Leather, Japanese Denim.',
+      },
+      color: {
+        type: Type.STRING,
+        description: isZh
+          ? '单品主色调中文名称，例如：海军蓝、象牙白、驼色。'
+          : 'The primary color of the item.',
+      },
+      colorHex: {
+        type: Type.STRING,
+        description: 'A 6-character hex code representing the primary color, e.g., #121367.',
+      },
+      curationTitle1: {
+        type: Type.STRING,
+        description: isZh
+          ? '中文策展标题，例如：完美同色系搭配、利落商务休闲风。'
+          : 'A styling/curation headline note, e.g., Perfect tonal pairing, Smart business casual.',
+      },
+      curationContent1: {
+        type: Type.STRING,
+        description: isZh
+          ? '1-2 句中文详细造型洞察，说明该单品为何出彩以及最适合搭配什么质感。'
+          : 'A 1-2 sentence detailed styling insight explaining why this item works well and what textures it pairs best with.',
+      },
+      curationTitle2: {
+        type: Type.STRING,
+        description: isZh
+          ? '中文场景/天气适配标题，例如：20°C 通勤理想选择、夜晚叠穿利器。'
+          : 'A weather/context suitability headline, e.g., Premium 20°C transition, Ideal evening layering.',
+      },
+      curationContent2: {
+        type: Type.STRING,
+        description: isZh
+          ? '1-2 句中文详细说明，解释哪些天气条件或场合最适合这件单品。'
+          : 'A 1-2 sentence detailed insight explaining which weather conditions or occasions are perfect for this item.',
+      },
+    },
+    required: [
+      'name',
+      'brand',
+      'category',
+      'material',
+      'color',
+      'colorHex',
+      'curationTitle1',
+      'curationContent1',
+      'curationTitle2',
+      'curationContent2',
+    ],
+  };
+}
+
+function getProfileScanSchema(language?: string) {
+  const isZh = language === 'zh-CN' || language === 'zh';
+  return {
+    type: Type.OBJECT,
+    properties: {
+      skinTone: {
+        type: Type.STRING,
+        description: isZh
+          ? '中文肤色描述，例如：冷象牙色、暖沙色、金蜜色、深可可色、橄榄色。'
+          : 'Skin tone description, e.g. Cool Ivory, Warm Sand, Golden Honey, Rich Walnut, Deep Cocoa, Olive.',
+      },
+      skinToneColor: {
+        type: Type.STRING,
+        description: 'A single representative Hex color code for this skin tone, e.g., #F5E6DA.',
+      },
+      bodyType: {
+        type: Type.STRING,
+        description: isZh
+          ? '中文体型描述，例如：沙漏型、矩形身材、梨形身材、运动型、倒三角型。'
+          : 'Suggested body type shape, e.g., Hourglass, Rectangle, Pear, Athletic, Inverted Triangle.',
+      },
+      recommendationPaletteName: {
+        type: Type.STRING,
+        description: isZh
+          ? '中文配色主题名称，例如： pastel 冷调、大地暖调、浓郁宝石色调。'
+          : 'A theme name for the palette, e.g. Pastel & Cool Tones, Earthy & Warm Tones, Vibrant Jewel Tones.',
+      },
+      recommendationDescription: {
+        type: Type.STRING,
+        description: isZh
+          ? '2 句中文说明，解释为什么这些颜色适合该肤色底调。'
+          : 'A short 2-sentence explanation of why these colors suit their skin tone undertone.',
+      },
+      paletteColors: {
+        type: Type.ARRAY,
+        description: isZh
+          ? '5 种能衬托其特征的中文精选色。'
+          : 'A highly curated set of exactly 5 colors that enhance their features.',
+        items: {
+          type: Type.OBJECT,
+          properties: {
+            name: {
+              type: Type.STRING,
+              description: isZh
+                ? '中文颜色名称，例如：鼠尾草绿、米白色、浅灰色。'
+                : 'Descriptive color name, e.g., Sage Green, Off White, Light Gray.',
+            },
+            hex: {
+              type: Type.STRING,
+              description: 'The 6-character color hex code, e.g., #A5C9CA.',
+            },
+          },
+          required: ['name', 'hex'],
+        },
+      },
+    },
+    required: [
+      'skinTone',
+      'skinToneColor',
+      'bodyType',
+      'recommendationPaletteName',
+      'recommendationDescription',
+      'paletteColors',
+    ],
+  };
+}
+
 // Create Gemini Client
 let ai: GoogleGenAI | null = null;
 const apiKey = process.env.GEMINI_API_KEY;
@@ -111,7 +263,7 @@ async function startServer() {
   // API Route: Scan an item image to extract fashion specifications
   app.post('/api/scan-item', async (req: Request, res: Response): Promise<void> => {
     try {
-      const { image, userId } = req.body;
+      const { image, userId, language } = req.body;
       if (!image) {
         res.status(400).json({ error: 'Missing image parameter.' });
         return;
@@ -145,70 +297,14 @@ async function startServer() {
         },
       };
 
-      const prompt = `Analyze this clothing or fashion item image. Extract its key attributes and provide high-fashion digital atelier style curation notes.`;
+      const prompt = `Analyze this clothing or fashion item image. Extract its key attributes and provide high-fashion WearMate style curation notes. ${getLanguageInstruction(language)}`;
 
       const response = await ai.models.generateContent({
         model: 'gemini-3.5-flash',
         contents: [imagePart, prompt],
         config: {
           responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              name: {
-                type: Type.STRING,
-                description: 'The descriptive product name of the item, e.g. Structured Tweed Jacket, Silk Slip Dress, Calfskin Loafers.',
-              },
-              brand: {
-                type: Type.STRING,
-                description: 'Suggest a luxury or fashion-forward brand that matches this style (e.g. Theory, Celine, The Row, Prada, Saint Laurent, Gucci, etc.) if not clearly visible.',
-              },
-              category: {
-                type: Type.STRING,
-                description: 'Must be one of: tops, bottoms, shoes, accessories.',
-              },
-              material: {
-                type: Type.STRING,
-                description: 'The likely material or fabric composition, e.g. 100% Virgin Wool, Premium Silk Crepe, Togo Leather, Japanese Denim.',
-              },
-              color: {
-                type: Type.STRING,
-                description: 'The primary color of the item.',
-              },
-              colorHex: {
-                type: Type.STRING,
-                description: 'A 6-character hex code representing the primary color, e.g., #121367.',
-              },
-              curationTitle1: {
-                type: Type.STRING,
-                description: 'A styling/curation headline note, e.g., Perfect tonal pairing, Smart business casual.',
-              },
-              curationContent1: {
-                type: Type.STRING,
-                description: 'A 1-2 sentence detailed styling insight explaining why this item works well and what textures it pairs best with.',
-              },
-              curationTitle2: {
-                type: Type.STRING,
-                description: 'A weather/context suitability headline, e.g., Premium 20°C transition, Ideal evening layering.',
-              },
-              curationContent2: {
-                type: Type.STRING,
-                description: 'A 1-2 sentence detailed insight explaining which weather conditions or occasions are perfect for this item.',
-              },
-            },
-            required: [
-              'name',
-              'brand',
-              'category',
-              'material',
-              'color',
-              'colorHex',
-              'curationTitle1',
-              'curationContent1',
-              'curationTitle2',
-              'curationContent2',
-            ],
-          },
+          responseSchema: getItemScanSchema(language),
         },
       });
 
@@ -227,7 +323,7 @@ async function startServer() {
   // API Route: Analyze personal aesthetics (skin tone, undertone, body shape) from a selfie or photo
   app.post('/api/analyze-profile', async (req: Request, res: Response): Promise<void> => {
     try {
-      const { image, userId } = req.body;
+      const { image, userId, language } = req.body;
       if (!image) {
         res.status(400).json({ error: 'Missing image parameter.' });
         return;
@@ -260,58 +356,14 @@ async function startServer() {
         },
       };
 
-      const prompt = `Analyze this person's portrait or photo to detect skin tone undertone and general body shape. Suggest a highly curated high-contrast cool or warm palette. If the image is not a person, simulate a high-quality styling persona (Cool Ivory & Hourglass).`;
+      const prompt = `Analyze this person's portrait or photo to detect skin tone undertone and general body shape. Suggest a highly curated high-contrast cool or warm palette. If the image is not a person, simulate a high-quality styling persona (Cool Ivory & Hourglass). ${getLanguageInstruction(language)}`;
 
       const response = await ai.models.generateContent({
         model: 'gemini-3.5-flash',
         contents: [imagePart, prompt],
         config: {
           responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              skinTone: {
-                type: Type.STRING,
-                description: 'Skin tone description, e.g. Cool Ivory, Warm Sand, Golden Honey, Rich Walnut, Deep Cocoa, Olive.',
-              },
-              skinToneColor: {
-                type: Type.STRING,
-                description: 'A single representative Hex color code for this skin tone, e.g., #F5E6DA.',
-              },
-              bodyType: {
-                type: Type.STRING,
-                description: 'Suggested body type shape, e.g., Hourglass, Rectangle, Pear, Athletic, Inverted Triangle.',
-              },
-              recommendationPaletteName: {
-                type: Type.STRING,
-                description: 'A theme name for the palette, e.g. Pastel & Cool Tones, Earthy & Warm Tones, Vibrant Jewel Tones.',
-              },
-              recommendationDescription: {
-                type: Type.STRING,
-                description: 'A short 2-sentence explanation of why these colors suit their skin tone undertone.',
-              },
-              paletteColors: {
-                type: Type.ARRAY,
-                description: 'A highly curated set of exactly 5 colors that enhance their features.',
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    name: { type: Type.STRING, description: 'Descriptive color name, e.g., Sage Green, Ochre, Coral.' },
-                    hex: { type: Type.STRING, description: 'The 6-character color hex code, e.g., #A5C9CA.' },
-                  },
-                  required: ['name', 'hex'],
-                },
-              },
-            },
-            required: [
-              'skinTone',
-              'skinToneColor',
-              'bodyType',
-              'recommendationPaletteName',
-              'recommendationDescription',
-              'paletteColors',
-            ],
-          },
+          responseSchema: getProfileScanSchema(language),
         },
       });
 
@@ -335,14 +387,14 @@ async function startServer() {
         return;
       }
 
-      const { items, scenario, userProfile } = req.body;
+      const { items, scenario, userProfile, language } = req.body;
       const scenarioText = scenario || 'Commute';
 
       const itemsDescription = items
         ?.map((it: any) => `- ${it.brand} ${it.name} (${it.category}, ${it.material}, Color: ${it.color})`)
         .join('\n') || 'None';
 
-      const prompt = `You are the lead AI Personal Stylist for DigitalAtelier, a luxury digital fashion wardrobing application.
+      const prompt = `You are the lead AI Personal Stylist for WearMate, a luxury digital fashion wardrobing application.
 We want to curate a gorgeous styled ensemble for a "${scenarioText}" scenario using a selection of the following closet items:
 ${itemsDescription}
 
@@ -350,7 +402,7 @@ User Profile details:
 - Skin Tone: ${userProfile?.skinTone || 'Cool Ivory'}
 - Body Type: ${userProfile?.bodyType || 'Hourglass'}
 
-Design a curated outfit name, set the perfect temperature suitability, and write 2 highly professional, fashion-forward AI Curation notes.
+Design a curated outfit name, set the perfect temperature suitability, and write 2 highly professional, fashion-forward AI Curation notes. ${getLanguageInstruction(language)}
 The first note must relate to styling cohesiveness or skin-tone suitability.
 The second note must relate to weather adaptability and practical lifestyle elegance.`;
 
@@ -548,7 +600,7 @@ The second note must relate to weather adaptability and practical lifestyle eleg
         return;
       }
 
-      const { userId, profilePhoto, topImage, bottomImage, shoesImage, prompt } = req.body;
+      const { userId, profilePhoto, topImage, bottomImage, shoesImage, prompt, language } = req.body;
       if (!userId || !profilePhoto) {
         res.status(400).json({ error: 'Missing userId or profilePhoto parameter.' });
         return;
@@ -581,7 +633,7 @@ The second note must relate to weather adaptability and practical lifestyle eleg
       pushImagePart(bottomImage, 'bottom garment');
       pushImagePart(shoesImage, 'shoes');
 
-      const defaultPrompt = `Create a realistic full-body outfit visualization. The person in the first photo is wearing the clothing items shown in the following reference images: ${clothingDesc.join(', ')}. Preserve the person's face, pose, and lighting. Make the outfit look natural and well-fitted.`;
+      const defaultPrompt = `Create a realistic full-body outfit visualization. The person in the first photo is wearing the clothing items shown in the following reference images: ${clothingDesc.join(', ')}. Preserve the person's face, pose, and lighting. Make the outfit look natural and well-fitted. ${getLanguageInstruction(language)}`;
 
       const response = await ai.models.generateContent({
         model: 'gemini-3.1-flash-lite-image',
@@ -651,7 +703,7 @@ The second note must relate to weather adaptability and practical lifestyle eleg
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[DigitalAtelier Backend] Running on http://localhost:${PORT}`);
+    console.log(`[WearMate Backend] Running on http://localhost:${PORT}`);
   });
 }
 

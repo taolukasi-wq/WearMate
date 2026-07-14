@@ -132,7 +132,7 @@ export const INITIAL_ITEMS: Item[] = EN_ITEMS;
 
 const EN_USER: UserProfile = {
   name: 'Julian',
-  email: 'julian@digitalatelier.com',
+  email: 'julian@wearmate.app',
   avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDQBHHAeaFD8nv2PFnW1tqz8kNKXf22WX3tNvkeQaSm1Q8_3f6D84wu-kwTJvUOJr70w9cl_FGKtcwRqxKQGEd6WmrEQWOrEkUJm-i93C2jgwN-_K9QDWT30K7UwvSrnYPRhhi1molrdNoQllK5ywseT5FlRsTpN2qJGJgUb-2J1VtKSRGGhlU5jW6Np1j4wWPCq-cxfgfD0syO8-h5xEdYHRx64z6VEhN6mjfe3e4NCHauTkWD6kc',
   skinTone: 'Cool Ivory',
   skinToneColor: '#F5E6DA',
