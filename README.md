@@ -50,6 +50,7 @@ npm install
 # 2. 配置环境变量
 # 复制 .env.example 为 .env.local，并填入你的 GEMINI_API_KEY
 # 如需腾讯云 COS 存储，同时填入 COS_SECRET_ID、COS_SECRET_KEY、COS_REGION、COS_BUCKET
+# 可选：自定义 COS_ENDPOINT（用于加速域名/自定义域名），未填时使用默认 `${bucket}.cos.${region}.myqcloud.com`
 
 # 3. 启动开发服务器
 npm run dev

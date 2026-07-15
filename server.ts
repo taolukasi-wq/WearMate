@@ -27,6 +27,7 @@ const COS_SECRET_ID = process.env.COS_SECRET_ID;
 const COS_SECRET_KEY = process.env.COS_SECRET_KEY;
 const COS_REGION = process.env.COS_REGION;
 const COS_BUCKET = process.env.COS_BUCKET;
+const COS_ENDPOINT = process.env.COS_ENDPOINT;
 
 const cosEnabled = !!(COS_SECRET_ID && COS_SECRET_KEY && COS_REGION && COS_BUCKET);
 const cos = cosEnabled
@@ -37,6 +38,10 @@ const cos = cosEnabled
   : null;
 
 function getCosPublicUrl(key: string): string {
+  if (COS_ENDPOINT) {
+    const base = COS_ENDPOINT.replace(/\/$/, '');
+    return `${base}/${key}`;
+  }
   return `https://${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com/${key}`;
 }
 
@@ -75,6 +80,7 @@ async function saveImage(
       Key: key,
       Body: Buffer.from(base64Data, 'base64'),
       ContentType: contentType,
+      ...(COS_ENDPOINT ? { Domain: COS_ENDPOINT } : {}),
     });
     return {
       filePath: key,
