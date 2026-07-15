@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { UserProfile, Outfit, Item } from '../types';
 import { getInitialOutfits } from '../data';
 import { useTranslation } from '../i18n';
+import { Translations } from '../i18n/types';
 
 interface HomeTabProps {
   user: UserProfile;
@@ -16,10 +17,83 @@ function getGreetingKey(): 'goodMorning' | 'goodAfternoon' | 'goodEvening' {
   return 'goodEvening';
 }
 
+function getWeatherIconAndKey(code: number): { icon: string; key: keyof Translations } {
+  if (code === 0) return { icon: 'sunny', key: 'weatherClear' };
+  if ([1, 2, 3].includes(code)) return { icon: 'partly_cloudy_day', key: 'weatherCloudy' };
+  if ([45, 48].includes(code)) return { icon: 'foggy', key: 'weatherFoggy' };
+  if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(code)) {
+    return { icon: 'rainy', key: 'weatherRainy' };
+  }
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return { icon: 'weather_snowy', key: 'weatherSnowy' };
+  if ([95, 96, 99].includes(code)) return { icon: 'thunderstorm', key: 'weatherStormy' };
+  return { icon: 'sunny', key: 'weatherClear' };
+}
+
+function getTempAdviceKey(temp: number): keyof Translations {
+  if (temp >= 26) return 'stayCool';
+  if (temp >= 15) return 'lightLayers';
+  if (temp >= 5) return 'keepWarm';
+  return 'bundleUp';
+}
+
 export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabProps) {
   const { t, language } = useTranslation();
   const INITIAL_OUTFITS = getInitialOutfits(language);
   const [selectedOutfit, setSelectedOutfit] = useState<Outfit | null>(null);
+  const [weather, setWeather] = useState<{
+    temp: number | null;
+    code: number | null;
+    loading: boolean;
+    error: string | null;
+  }>({ temp: null, code: null, loading: true, error: null });
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setWeather({ temp: null, code: null, loading: false, error: 'locationDenied' });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const response = await fetch(`/api/weather?lat=${latitude}&lon=${longitude}`);
+          if (!response.ok) throw new Error('Weather fetch failed');
+          const data = await response.json();
+          setWeather({
+            temp: typeof data.temperature === 'number' ? data.temperature : null,
+            code: typeof data.weathercode === 'number' ? data.weathercode : null,
+            loading: false,
+            error: null,
+          });
+        } catch (err) {
+          setWeather({ temp: null, code: null, loading: false, error: 'weatherUnavailable' });
+        }
+      },
+      () => {
+        setWeather({ temp: null, code: null, loading: false, error: 'locationDenied' });
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
+    );
+  }, []);
+
+  let weatherTitle = t('weatherSunny');
+  let weatherIcon = 'sunny';
+  let weatherAdvice = t('lightLayers');
+
+  if (weather.loading) {
+    weatherTitle = t('weatherLoading');
+    weatherAdvice = '';
+  } else if (weather.error) {
+    weatherTitle = t(weather.error as keyof Translations);
+    weatherIcon = 'sunny';
+    weatherAdvice = '';
+  } else if (weather.temp !== null && weather.code !== null) {
+    const info = getWeatherIconAndKey(weather.code);
+    weatherIcon = info.icon;
+    weatherTitle = `${t(info.key)} ${Math.round(weather.temp)}°C`;
+    weatherAdvice = t(getTempAdviceKey(weather.temp));
+  }
 
   // Hardcoded recommendations with gorgeous images from the prompt
   const recommendations = [
@@ -100,17 +174,19 @@ export default function HomeTab({ user, onNavigateToScan, onViewItem }: HomeTabP
           <div className="relative z-10 p-6 flex-1 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined filled text-on-tertiary-container text-lg">sunny</span>
+                <span className="material-symbols-outlined filled text-on-tertiary-container text-lg">{weatherIcon}</span>
                 <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
                   {t('todayForecast')}
                 </span>
               </div>
               <h3 className="font-display text-2xl lg:text-3xl font-extrabold text-[#191c1e]">
-                {t('weatherSunny')}
+                {weatherTitle}
               </h3>
-              <p className="text-sm lg:text-base font-semibold text-primary mt-2">
-                {t('lightLayers')}
-              </p>
+              {weatherAdvice && (
+                <p className="text-sm lg:text-base font-semibold text-primary mt-2">
+                  {weatherAdvice}
+                </p>
+              )}
             </div>
             <div className="mt-6">
               <button

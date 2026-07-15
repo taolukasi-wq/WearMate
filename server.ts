@@ -848,6 +848,35 @@ The second note must relate to weather adaptability and practical lifestyle eleg
     }
   });
 
+  // Weather forecast proxy (uses browser geolocation + Open-Meteo)
+  app.get('/api/weather', async (req, res) => {
+    const lat = parseFloat(req.query.lat as string);
+    const lon = parseFloat(req.query.lon as string);
+
+    if (Number.isNaN(lat) || Number.isNaN(lon)) {
+      res.status(400).json({ error: 'Invalid latitude or longitude' });
+      return;
+    }
+
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Open-Meteo responded ${response.status}`);
+      }
+      const data = await response.json();
+      const cw = data.current_weather || {};
+      res.json({
+        temperature: cw.temperature,
+        weathercode: cw.weathercode,
+        isDay: cw.is_day,
+      });
+    } catch (error: any) {
+      console.error('Error fetching weather:', error);
+      res.status(500).json({ error: error.message || 'Failed to fetch weather' });
+    }
+  });
+
   // Static file serving fallback for locally stored images (only when COS is disabled)
   if (!cosEnabled) {
     app.use('/images', express.static(IMAGES_DIR));

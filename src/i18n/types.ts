@@ -57,6 +57,18 @@ export interface Translations {
   todayForecast: string;
   weatherSunny: string;
   lightLayers: string;
+  weatherClear: string;
+  weatherCloudy: string;
+  weatherRainy: string;
+  weatherSnowy: string;
+  weatherStormy: string;
+  weatherFoggy: string;
+  weatherLoading: string;
+  weatherUnavailable: string;
+  locationDenied: string;
+  stayCool: string;
+  keepWarm: string;
+  bundleUp: string;
   viewDetails: string;
   scenarioSchool: string;
   scenarioWork: string;
