@@ -678,11 +678,14 @@ The second note must relate to weather adaptability and practical lifestyle eleg
       async function pushImagePart(imageSrc: string | undefined, label: string) {
         if (!imageSrc) return;
         let imageData = imageSrc;
-        // Fetch remote/local images and convert to base64 data URL
-        if (imageSrc.startsWith('http://') || imageSrc.startsWith('https://') || imageSrc.startsWith('/images/')) {
-          console.log(`[generate-outfit-visual] Fetching ${label} image from:`, imageSrc);
+        // Convert relative local paths to base64; reject remote URLs that slipped through
+        if (imageSrc.startsWith('/images/')) {
           imageData = await fetchImageAsBase64(imageSrc);
-          console.log(`[generate-outfit-visual] Fetched ${label} image, data URL length:`, imageData.length);
+        } else if (imageSrc.startsWith('http://') || imageSrc.startsWith('https://')) {
+          throw new Error(
+            `Invalid image data for ${label}: received a remote URL instead of base64. ` +
+            `Please re-upload the image or select items with locally accessible photos.`
+          );
         }
         if (!imageData.startsWith('data:')) {
           throw new Error(`Invalid image data for ${label}: expected base64 data URL, got ${imageData.slice(0, 100)}`);

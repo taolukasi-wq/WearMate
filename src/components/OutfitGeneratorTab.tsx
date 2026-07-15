@@ -150,23 +150,29 @@ export default function OutfitGeneratorTab({ user, items }: OutfitGeneratorTabPr
     startCamera();
   };
 
-  const fetchImageAsBase64 = async (imageUrl: string | undefined): Promise<string | undefined> => {
-    if (!imageUrl) return undefined;
-    if (imageUrl.startsWith('data:')) return imageUrl;
-    try {
-      const response = await fetch(imageUrl);
-      if (!response.ok) throw new Error(`Failed to fetch ${imageUrl}`);
-      const blob = await response.blob();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    } catch (err) {
-      console.warn('Failed to convert image to base64:', err);
-      return imageUrl;
-    }
+  const convertImageToBase64 = (imageUrl: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || 640;
+          canvas.height = img.naturalHeight || 640;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Failed to get canvas context'));
+            return;
+          }
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/jpeg'));
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = () => reject(new Error(`Failed to load image: ${imageUrl}`));
+      img.src = imageUrl;
+    });
   };
 
   const handleGenerate = async () => {
@@ -176,9 +182,9 @@ export default function OutfitGeneratorTab({ user, items }: OutfitGeneratorTabPr
     setStep('generating');
     try {
       const [topImage, bottomImage, shoesImage] = await Promise.all([
-        fetchImageAsBase64(selectedTop?.image),
-        fetchImageAsBase64(selectedBottom?.image),
-        fetchImageAsBase64(selectedShoes?.image),
+        selectedTop?.image ? convertImageToBase64(selectedTop.image) : Promise.resolve(undefined),
+        selectedBottom?.image ? convertImageToBase64(selectedBottom.image) : Promise.resolve(undefined),
+        selectedShoes?.image ? convertImageToBase64(selectedShoes.image) : Promise.resolve(undefined),
       ]);
 
       const response = await fetch('/api/generate-outfit-visual', {
