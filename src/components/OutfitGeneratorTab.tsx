@@ -150,21 +150,46 @@ export default function OutfitGeneratorTab({ user, items }: OutfitGeneratorTabPr
     startCamera();
   };
 
+  const fetchImageAsBase64 = async (imageUrl: string | undefined): Promise<string | undefined> => {
+    if (!imageUrl) return undefined;
+    if (imageUrl.startsWith('data:')) return imageUrl;
+    try {
+      const response = await fetch(imageUrl);
+      if (!response.ok) throw new Error(`Failed to fetch ${imageUrl}`);
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (err) {
+      console.warn('Failed to convert image to base64:', err);
+      return imageUrl;
+    }
+  };
+
   const handleGenerate = async () => {
     if (!user.id || !profilePhoto) return;
     setIsGenerating(true);
     setError(null);
     setStep('generating');
     try {
+      const [topImage, bottomImage, shoesImage] = await Promise.all([
+        fetchImageAsBase64(selectedTop?.image),
+        fetchImageAsBase64(selectedBottom?.image),
+        fetchImageAsBase64(selectedShoes?.image),
+      ]);
+
       const response = await fetch('/api/generate-outfit-visual', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user.id,
           profilePhoto,
-          topImage: selectedTop?.image,
-          bottomImage: selectedBottom?.image,
-          shoesImage: selectedShoes?.image,
+          topImage,
+          bottomImage,
+          shoesImage,
           language,
         }),
       });

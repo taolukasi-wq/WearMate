@@ -98,13 +98,19 @@ async function fetchImageAsBase64(imageUrl: string): Promise<string> {
     ? imageUrl
     : `http://localhost:${process.env.PORT || 3000}${imageUrl}`;
 
-  const response = await fetch(url);
+  console.log(`[fetchImageAsBase64] Fetching: ${url}`);
+  const response = await fetch(url, {
+    headers: {
+      'User-Agent': 'WearMate-Backend/1.0',
+    },
+  });
   if (!response.ok) {
-    throw new Error(`Failed to fetch image from ${url}: ${response.status}`);
+    throw new Error(`Failed to fetch image from ${url}: ${response.status} ${response.statusText}`);
   }
   const arrayBuffer = await response.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-  const contentType = response.headers.get('content-type') || 'image/jpeg';
+  const contentType = (response.headers.get('content-type') || 'image/jpeg').split(';')[0].trim();
+  console.log(`[fetchImageAsBase64] Fetched ${buffer.length} bytes, content-type: ${contentType}`);
   return `data:${contentType};base64,${buffer.toString('base64')}`;
 }
 
@@ -673,16 +679,21 @@ The second note must relate to weather adaptability and practical lifestyle eleg
         if (!imageSrc) return;
         let imageData = imageSrc;
         // Fetch remote/local images and convert to base64 data URL
-        if (imageSrc.startsWith('http') || imageSrc.startsWith('/images/')) {
+        if (imageSrc.startsWith('http://') || imageSrc.startsWith('https://') || imageSrc.startsWith('/images/')) {
+          console.log(`[generate-outfit-visual] Fetching ${label} image from:`, imageSrc);
           imageData = await fetchImageAsBase64(imageSrc);
+          console.log(`[generate-outfit-visual] Fetched ${label} image, data URL length:`, imageData.length);
         }
-        let mimeType = 'image/jpeg';
-        let base64Data = imageData;
-        const matches = imageData.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.*)$/);
-        if (matches && matches.length === 3) {
-          mimeType = matches[1];
-          base64Data = matches[2];
+        if (!imageData.startsWith('data:')) {
+          throw new Error(`Invalid image data for ${label}: expected base64 data URL, got ${imageData.slice(0, 100)}`);
         }
+        const commaIndex = imageData.indexOf(',');
+        if (commaIndex === -1) {
+          throw new Error(`Invalid image data for ${label}: missing base64 comma`);
+        }
+        const header = imageData.slice(5, commaIndex);
+        const base64Data = imageData.slice(commaIndex + 1);
+        const mimeType = header.split(';')[0] || 'image/jpeg';
         imageParts.push({
           inlineData: { mimeType, data: base64Data },
         });
