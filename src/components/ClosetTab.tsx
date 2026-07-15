@@ -33,7 +33,12 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
   const [newItemImage, setNewItemImage] = useState<string | null>(null);
   const [isScanningUploadedImage, setIsScanningUploadedImage] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraFacing, setCameraFacing] = useState<'environment' | 'user'>('environment');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   // States for Mix & Match AI generation
   const [isMixMatchOpen, setIsMixMatchOpen] = useState(false);
@@ -66,6 +71,75 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
     setNewItemSize('');
     setNewItemImage(null);
     setIsScanningUploadedImage(false);
+    stopCamera();
+  };
+
+  const startCamera = async () => {
+    setCameraError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: cameraFacing },
+        audio: false,
+      });
+      setCameraStream(stream);
+      setIsCameraActive(true);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err: any) {
+      console.warn('Camera could not start:', err);
+      setCameraError(t('cameraNotAvailable'));
+    }
+  };
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((track) => track.stop());
+      setCameraStream(null);
+    }
+    setIsCameraActive(false);
+  };
+
+  const toggleCameraFacing = () => {
+    const nextFacing = cameraFacing === 'environment' ? 'user' : 'environment';
+    setCameraFacing(nextFacing);
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((track) => track.stop());
+      setCameraStream(null);
+    }
+    setTimeout(() => {
+      navigator.mediaDevices
+        .getUserMedia({ video: { facingMode: nextFacing }, audio: false })
+        .then((stream) => {
+          setCameraStream(stream);
+          setIsCameraActive(true);
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        })
+        .catch((err) => {
+          console.warn('Camera could not switch:', err);
+          setCameraError(t('cameraNotAvailable'));
+        });
+    }, 50);
+  };
+
+  const handleCaptureFromCamera = () => {
+    if (!videoRef.current) return;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth || 640;
+      canvas.height = videoRef.current.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        setNewItemImage(dataUrl);
+        stopCamera();
+      }
+    } catch (err) {
+      alert(t('captureError'));
+    }
   };
 
   const handleAddNewItem = (e: React.FormEvent) => {
@@ -451,7 +525,7 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                 </div>
               </div>
 
-              {/* Upload a photo from album */}
+              {/* Upload or take a photo */}
               <div>
                 <label className="block text-[11px] font-bold text-on-surface-variant uppercase tracking-wider mb-2 ml-1">
                   {t('uploadOrTakePhoto')}
@@ -488,6 +562,40 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                       )}
                     </button>
                   </div>
+                ) : isCameraActive ? (
+                  <div className="relative rounded-2xl overflow-hidden aspect-[3/4] bg-neutral-950 shadow-lg">
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={toggleCameraFacing}
+                      className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/60 transition-all cursor-pointer"
+                      title={t('flipCamera')}
+                    >
+                      <span className="material-symbols-outlined text-lg">flip_camera_ios</span>
+                    </button>
+                    <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/70 to-transparent flex items-center justify-center gap-4">
+                      <button
+                        type="button"
+                        onClick={stopCamera}
+                        className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-xs font-bold hover:bg-white/20 transition-all cursor-pointer"
+                      >
+                        {t('cancel')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCaptureFromCamera}
+                        className="w-16 h-16 bg-white rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-2xl cursor-pointer"
+                      >
+                        <div className="w-12 h-12 rounded-full border-2 border-primary/20" />
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="space-y-3">
                     <div
@@ -501,7 +609,7 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                           : 'border-outline-variant bg-surface-container-low hover:border-primary/40 hover:bg-surface-container'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-4xl text-on-surface-variant">photo_library</span>
+                      <span className="material-symbols-outlined text-4xl text-on-surface-variant">cloud_upload</span>
                       <div className="text-center">
                         <p className="text-sm font-bold text-on-surface-variant">{t('dragDropImage')}</p>
                         <p className="text-xs text-outline mt-1">{t('uploadFileHint')}</p>
@@ -515,16 +623,30 @@ export default function ClosetTab({ items, user, onAddItem, onViewItem }: Closet
                       />
                     </div>
 
-                    <label className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white rounded-xl font-display font-semibold text-xs shadow-lg shadow-primary/10 hover:bg-primary-container active:scale-95 transition-all cursor-pointer">
-                      <span className="material-symbols-outlined text-sm">collections</span>
-                      {t('selectFromAlbum')}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleFileUpload}
-                      />
-                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={startCamera}
+                        className="flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-xl font-display font-semibold text-xs shadow-lg shadow-primary/10 hover:bg-primary-container active:scale-95 transition-all cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-sm">photo_camera</span>
+                        {t('takePhoto')}
+                      </button>
+                      <label className="flex items-center justify-center gap-2 py-3 bg-surface-container text-on-surface-variant rounded-xl font-display font-semibold text-xs border border-outline-variant hover:bg-surface-container-high active:scale-95 transition-all cursor-pointer">
+                        <span className="material-symbols-outlined text-sm">collections</span>
+                        {t('selectFromAlbum')}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleFileUpload}
+                        />
+                      </label>
+                    </div>
+
+                    {cameraError && (
+                      <p className="text-xs text-error text-center font-medium">{cameraError}</p>
+                    )}
                   </div>
                 )}
               </div>
