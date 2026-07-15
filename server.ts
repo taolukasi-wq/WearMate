@@ -708,7 +708,7 @@ The second note must relate to weather adaptability and practical lifestyle eleg
       await pushImagePart(bottomImage, 'bottom garment');
       await pushImagePart(shoesImage, 'shoes');
 
-      const defaultPrompt = `Create a realistic full-body outfit visualization. The person in the first photo is wearing the clothing items shown in the following reference images: ${clothingDesc.join(', ')}. Preserve the person's face, pose, and lighting. Make the outfit look natural and well-fitted. ${getLanguageInstruction(language)}`;
+      const defaultPrompt = `Create a realistic full-body outfit visualization. The person in the first photo is wearing only the clothing items shown in the following reference images: ${clothingDesc.join(', ')}. Preserve the person's face, pose, and lighting. Use a clean, plain, neutral background. Do not add any accessories, bags, jewelry, hats, sunglasses, props, other people, or decorative elements. Show only the person and the selected outfit. Keep the composition simple and focused. Make the outfit look natural and well-fitted. ${getLanguageInstruction(language)}`;
 
       const response = await ai.models.generateContent({
         model: 'gemini-3.1-flash-lite-image',
