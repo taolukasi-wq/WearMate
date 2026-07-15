@@ -183,6 +183,7 @@ export interface Translations {
   flipCamera: string;
   useThisPhoto: string;
   retake: string;
+  selectFromAlbum: string;
 
   // Product
   productDetail: string;

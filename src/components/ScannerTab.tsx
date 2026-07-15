@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Item, UserProfile } from '../types';
 import { useTranslation } from '../i18n';
 
@@ -11,15 +11,11 @@ interface ScannerTabProps {
 export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: ScannerTabProps) {
   const { t, language } = useTranslation();
   const [scanType, setScanType] = useState<'item' | 'profile'>('item');
-  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
-  const [cameraError, setCameraError] = useState<string | null>(null);
-  const [cameraFacing, setCameraFacing] = useState<'environment' | 'user'>('environment');
   const [isScanning, setIsScanning] = useState(false);
   const [scannedResult, setScannedResult] = useState<any | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [savedImagePath, setSavedImagePath] = useState<string | null>(null);
 
-  const videoRef = useRef<HTMLVideoElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Demo standard photos matching the mockups so the user can see beautiful outcomes instantly!
@@ -37,79 +33,6 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
   // Drag and drop events
   const [isDragging, setIsDragging] = useState(false);
 
-  // Initialize and stop camera stream
-  const startCamera = async () => {
-    setCameraError(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: cameraFacing, width: 640, height: 480 },
-        audio: false,
-      });
-      setCameraStream(stream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-    } catch (err: any) {
-      console.warn('Camera could not start (likely running inside sandboxed frame):', err);
-      setCameraError(t('cameraNotAvailable'));
-    }
-  };
-
-  const toggleCameraFacing = () => {
-    const nextFacing = cameraFacing === 'environment' ? 'user' : 'environment';
-    setCameraFacing(nextFacing);
-    if (cameraStream) {
-      cameraStream.getTracks().forEach((track) => track.stop());
-      setCameraStream(null);
-    }
-    setTimeout(() => {
-      navigator.mediaDevices
-        .getUserMedia({ video: { facingMode: nextFacing, width: 640, height: 480 }, audio: false })
-        .then((stream) => {
-          setCameraStream(stream);
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-          }
-        })
-        .catch((err) => {
-          console.warn('Camera could not switch:', err);
-          setCameraError(t('cameraNotAvailable'));
-        });
-    }, 50);
-  };
-
-  const stopCamera = () => {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach((track) => track.stop());
-      setCameraStream(null);
-    }
-  };
-
-  useEffect(() => {
-    startCamera();
-    return () => stopCamera();
-  }, [cameraFacing]);
-
-  const handleCapture = () => {
-    if (!videoRef.current) return;
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth || 640;
-      canvas.height = videoRef.current.videoHeight || 480;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg');
-        setUploadedImage(dataUrl);
-        stopCamera();
-        handleTriggerScan(dataUrl);
-      }
-    } catch (err) {
-      alert(t('captureError'));
-      handleUseDemo();
-    }
-  };
-
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -117,7 +40,6 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
       setUploadedImage(dataUrl);
-      stopCamera();
       handleTriggerScan(dataUrl);
     };
     reader.readAsDataURL(file);
@@ -142,7 +64,6 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
     reader.onload = (event) => {
       const dataUrl = event.target?.result as string;
       setUploadedImage(dataUrl);
-      stopCamera();
       handleTriggerScan(dataUrl);
     };
     reader.readAsDataURL(file);
@@ -151,7 +72,6 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
   const handleUseDemo = () => {
     const demoUrl = scanType === 'item' ? demoImages.item.url : demoImages.profile.url;
     setUploadedImage(demoUrl);
-    stopCamera();
     handleTriggerScan(demoUrl);
   };
 
@@ -250,7 +170,6 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
     setUploadedImage(null);
     setSavedImagePath(null);
     setIsScanning(false);
-    startCamera();
   };
 
   return (
@@ -281,87 +200,26 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
         </button>
       </nav>
 
-      {/* Viewfinder Capture Screen */}
+      {/* Album Upload Screen */}
       {!uploadedImage && !isScanning && !scannedResult ? (
         <section
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`relative rounded-3xl overflow-hidden aspect-[3/4] shadow-2xl border flex flex-col justify-between p-6 transition-all duration-300 ${
+          className={`relative rounded-3xl overflow-hidden aspect-[3/4] shadow-2xl border flex flex-col items-center justify-center p-8 transition-all duration-300 ${
             isDragging ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-white/30 bg-neutral-950'
           }`}
         >
-          {cameraStream && !cameraError ? (
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              className="absolute inset-0 w-full h-full object-cover opacity-80"
-            />
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-4 bg-neutral-900">
-              <span className="material-symbols-outlined text-outline-variant text-5xl">cloud_upload</span>
-              <div>
-                <p className="text-white text-sm font-bold">{t('dragDropImage')}</p>
-                <p className="text-xs text-outline-variant mt-1">{t('uploadFileHint')}</p>
-              </div>
+          <div className="text-center space-y-6">
+            <span className="material-symbols-outlined text-outline-variant text-6xl">photo_library</span>
+            <div>
+              <p className="text-white text-lg font-bold font-display mb-2">
+                {scanType === 'item' ? t('scanClothingItem') : t('scanStyleProfile')}
+              </p>
+              <p className="text-sm text-outline-variant max-w-xs mx-auto leading-relaxed">
+                {scanType === 'item' ? t('scanHint') : t('profileHint')}
+              </p>
             </div>
-          )}
-
-          {/* Guidelines Corner Brackets */}
-          <div className="absolute inset-6 pointer-events-none border border-white/5 rounded-2xl">
-            <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white/80 rounded-tl-xl" />
-            <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white/80 rounded-tr-xl" />
-            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white/80 rounded-bl-xl" />
-            <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white/80 rounded-br-xl" />
-            {/* Animated Laser Scanning Line */}
-            {cameraStream && (
-              <div
-                className="absolute left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#9599ee] to-transparent shadow-[0_0_15px_rgba(149,153,238,0.6)] animate-pulse"
-                style={{
-                  top: '40%',
-                  animation: 'shimmer 2.5s infinite linear',
-                }}
-              />
-            )}
-          </div>
-
-          {/* Viewfinder Top bar controls */}
-          <div className="relative z-10 flex justify-between items-center">
-            <div className="bg-black/30 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 flex items-center gap-3 text-white">
-              <button onClick={() => startCamera()} className="hover:text-primary transition-colors">
-                <span className="material-symbols-outlined text-lg">hdr_on</span>
-              </button>
-              <button
-                onClick={toggleCameraFacing}
-                className="hover:text-primary transition-colors"
-                title={t('flipCamera')}
-              >
-                <span className="material-symbols-outlined text-lg">flip_camera_ios</span>
-              </button>
-            </div>
-            <div className="bg-primary-container/90 text-on-primary-container px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg animate-pulse">
-              <span className="material-symbols-outlined text-sm filled text-white">smart_toy</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-white">{t('aiActive')}</span>
-            </div>
-          </div>
-
-          {/* Viewfinder Bottom guidelines text */}
-          <div className="relative z-10 text-center">
-            <p className="inline-block bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-sm border border-white/10">
-              {scanType === 'item' ? t('alignItem') : t('alignProfile')}
-            </p>
-          </div>
-
-          {/* Capture Trigger and file upload button row */}
-          <div className="relative z-10 flex items-center justify-around bg-gradient-to-t from-black/60 via-black/20 to-transparent p-4 rounded-b-2xl">
-            {/* File Upload Selector */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all active:scale-95 cursor-pointer"
-            >
-              <span className="material-symbols-outlined">collections</span>
-            </button>
             <input
               ref={fileInputRef}
               type="file"
@@ -369,24 +227,22 @@ export default function ScannerTab({ user, onUpdateUserProfile, onAddItem }: Sca
               className="hidden"
               onChange={handleFileUpload}
             />
-
-            {/* Main Shutter button */}
-            <button
-              onClick={cameraStream ? handleCapture : handleUseDemo}
-              className="w-20 h-20 bg-white rounded-full flex items-center justify-center active:scale-90 transition-transform duration-150 shadow-2xl group cursor-pointer"
-            >
-              <div className="w-16 h-16 rounded-full border-2 border-primary/10 flex items-center justify-center group-active:scale-95 transition-all">
-                <span className="material-symbols-outlined text-primary text-3xl filled">camera</span>
-              </div>
-            </button>
-
-            {/* Quick Demo Button */}
-            <button
-              onClick={handleUseDemo}
-              className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-[11px] font-bold tracking-wide hover:bg-white/20 transition-all active:scale-95 cursor-pointer"
-            >
-              {t('useDemoPhoto')}
-            </button>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="bg-white text-primary px-8 py-4 rounded-full font-display text-sm font-bold shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer hover:bg-white/95"
+              >
+                <span className="material-symbols-outlined text-primary text-xl">collections</span>
+                {t('selectFromAlbum')}
+              </button>
+              <button
+                onClick={handleUseDemo}
+                className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-xs font-bold hover:bg-white/20 transition-all active:scale-95 cursor-pointer"
+              >
+                {t('useDemoPhoto')}
+              </button>
+            </div>
+            <p className="text-xs text-outline-variant/70">{t('dragDropImage')}</p>
           </div>
         </section>
       ) : isScanning ? (

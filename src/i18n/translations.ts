@@ -179,6 +179,7 @@ export const translations: Record<Language, Translations> = {
     flipCamera: '翻转镜头',
     useThisPhoto: '使用这张照片',
     retake: '重拍',
+    selectFromAlbum: '从相册选择',
 
     productDetail: '单品详情',
     backToCloset: '返回衣橱',
@@ -404,6 +405,7 @@ export const translations: Record<Language, Translations> = {
     flipCamera: 'Flip Camera',
     useThisPhoto: 'Use This Photo',
     retake: 'Retake',
+    selectFromAlbum: 'Select from Album',
 
     productDetail: 'Product Detail',
     backToCloset: 'Back to Closet',

@@ -19,13 +19,7 @@ export default function OutfitGeneratorTab({ user, items }: OutfitGeneratorTabPr
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isCameraActive, setIsCameraActive] = useState(false);
-  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
-  const [cameraFacing, setCameraFacing] = useState<'environment' | 'user'>('environment');
-  const [cameraError, setCameraError] = useState<string | null>(null);
-  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const tops = items.filter((it) => it.category === 'tops');
   const bottoms = items.filter((it) => it.category === 'bottoms');
@@ -68,86 +62,6 @@ export default function OutfitGeneratorTab({ user, items }: OutfitGeneratorTabPr
     } finally {
       setIsUploading(false);
     }
-  };
-
-  const startCamera = async () => {
-    setCameraError(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: cameraFacing },
-        audio: false,
-      });
-      setCameraStream(stream);
-      setIsCameraActive(true);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-    } catch (err: any) {
-      console.warn('Camera could not start:', err);
-      setCameraError(t('cameraNotAvailable'));
-    }
-  };
-
-  const stopCamera = () => {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach((track) => track.stop());
-      setCameraStream(null);
-    }
-    setIsCameraActive(false);
-  };
-
-  const toggleCameraFacing = () => {
-    const nextFacing = cameraFacing === 'environment' ? 'user' : 'environment';
-    setCameraFacing(nextFacing);
-    if (cameraStream) {
-      cameraStream.getTracks().forEach((track) => track.stop());
-      setCameraStream(null);
-    }
-    setTimeout(() => {
-      navigator.mediaDevices
-        .getUserMedia({ video: { facingMode: nextFacing }, audio: false })
-        .then((stream) => {
-          setCameraStream(stream);
-          setIsCameraActive(true);
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-          }
-        })
-        .catch((err) => {
-          console.warn('Camera could not switch:', err);
-          setCameraError(t('cameraNotAvailable'));
-        });
-    }, 50);
-  };
-
-  const handleCaptureFromCamera = () => {
-    if (!videoRef.current) return;
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth || 640;
-      canvas.height = videoRef.current.videoHeight || 480;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg');
-        setCapturedPhoto(dataUrl);
-      }
-    } catch (err) {
-      alert(t('captureError'));
-    }
-  };
-
-  const handleConfirmCapturedPhoto = async () => {
-    if (!capturedPhoto) return;
-    setProfilePhoto(capturedPhoto);
-    stopCamera();
-    await uploadProfilePhoto(capturedPhoto);
-    setCapturedPhoto(null);
-  };
-
-  const handleRetakePhoto = () => {
-    setCapturedPhoto(null);
-    startCamera();
   };
 
   const handleGenerate = async () => {
@@ -231,102 +145,27 @@ export default function OutfitGeneratorTab({ user, items }: OutfitGeneratorTabPr
           <div className="absolute -right-20 -top-20 w-64 h-64 bg-on-primary-container/20 rounded-full blur-3xl" />
           <div className="absolute -left-20 -bottom-20 w-64 h-64 bg-on-tertiary-container/10 rounded-full blur-3xl" />
           <div className="relative z-10 flex flex-col items-center">
-            {capturedPhoto ? (
-              <div className="w-full space-y-4">
-                <div className="relative rounded-2xl overflow-hidden aspect-[3/4] max-w-xs mx-auto shadow-lg">
-                  <img src={capturedPhoto} alt="Captured frontal" className="w-full h-full object-cover" />
-                </div>
-                <div className="flex gap-3 justify-center">
-                  <button
-                    type="button"
-                    onClick={handleRetakePhoto}
-                    className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-xs font-bold hover:bg-white/20 transition-all cursor-pointer"
-                  >
-                    {t('retake')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleConfirmCapturedPhoto}
-                    disabled={isUploading}
-                    className="px-6 py-3 bg-white text-primary rounded-full font-display text-xs font-bold shadow-lg active:scale-95 transition-all cursor-pointer hover:bg-white/95 disabled:opacity-70"
-                  >
-                    {isUploading ? t('uploading') : t('useThisPhoto')}
-                  </button>
-                </div>
-              </div>
-            ) : isCameraActive ? (
-              <div className="w-full space-y-4">
-                <div className="relative rounded-2xl overflow-hidden aspect-[3/4] max-w-xs mx-auto bg-neutral-950 shadow-lg">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={toggleCameraFacing}
-                    className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/60 transition-all cursor-pointer"
-                    title={t('flipCamera')}
-                  >
-                    <span className="material-symbols-outlined text-lg">flip_camera_ios</span>
-                  </button>
-                </div>
-                <div className="flex items-center justify-center gap-4">
-                  <button
-                    type="button"
-                    onClick={stopCamera}
-                    className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-white text-xs font-bold hover:bg-white/20 transition-all cursor-pointer"
-                  >
-                    {t('cancel')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCaptureFromCamera}
-                    className="w-16 h-16 bg-white rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-2xl cursor-pointer"
-                  >
-                    <div className="w-12 h-12 rounded-full border-2 border-primary/20" />
-                  </button>
-                </div>
-                {cameraError && <p className="text-xs text-white/80 font-medium">{cameraError}</p>}
-              </div>
-            ) : (
-              <>
-                <span className="material-symbols-outlined text-on-primary-container text-5xl mb-4 animate-pulse">face</span>
-                <h3 className="font-display text-xl lg:text-2xl font-extrabold text-white mb-2">{t('uploadFrontalPhoto')}</h3>
-                <p className="text-sm text-on-primary-container/90 mb-8 max-w-sm mx-auto leading-relaxed">
-                  {t('uploadFrontalPhotoDesc')}
-                </p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <button
-                    type="button"
-                    onClick={startCamera}
-                    disabled={isUploading}
-                    className="bg-white text-primary px-8 py-4 rounded-full font-display text-sm font-bold shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer hover:bg-white/95 disabled:opacity-70"
-                  >
-                    <span className="material-symbols-outlined text-primary text-xl">photo_camera</span>
-                    {t('takePhoto')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
-                    className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full font-display text-sm font-bold active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer hover:bg-white/20 disabled:opacity-70"
-                  >
-                    <span className="material-symbols-outlined text-white text-xl">collections</span>
-                    {isUploading ? t('uploading') : t('selectPhoto')}
-                  </button>
-                </div>
-              </>
-            )}
+            <span className="material-symbols-outlined text-on-primary-container text-5xl mb-4 animate-pulse">face</span>
+            <h3 className="font-display text-xl lg:text-2xl font-extrabold text-white mb-2">{t('uploadFrontalPhoto')}</h3>
+            <p className="text-sm text-on-primary-container/90 mb-8 max-w-sm mx-auto leading-relaxed">
+              {t('uploadFrontalPhotoDesc')}
+            </p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="bg-white text-primary px-8 py-4 rounded-full font-display text-sm font-bold shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer hover:bg-white/95 disabled:opacity-70"
+            >
+              <span className="material-symbols-outlined text-primary text-xl">photo_library</span>
+              {isUploading ? t('uploading') : t('selectPhoto')}
+            </button>
           </div>
         </section>
       )}
