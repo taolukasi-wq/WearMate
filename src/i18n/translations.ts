@@ -177,6 +177,8 @@ export const translations: Record<Language, Translations> = {
     captureError: '拍摄出错，改用示例照片。',
     takePhoto: '拍照',
     flipCamera: '翻转镜头',
+    useThisPhoto: '使用这张照片',
+    retake: '重拍',
 
     productDetail: '单品详情',
     backToCloset: '返回衣橱',
@@ -400,6 +402,8 @@ export const translations: Record<Language, Translations> = {
     captureError: 'Capture error. Using fallback photo instead.',
     takePhoto: 'Take Photo',
     flipCamera: 'Flip Camera',
+    useThisPhoto: 'Use This Photo',
+    retake: 'Retake',
 
     productDetail: 'Product Detail',
     backToCloset: 'Back to Closet',

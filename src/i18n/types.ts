@@ -181,6 +181,8 @@ export interface Translations {
   captureError: string;
   takePhoto: string;
   flipCamera: string;
+  useThisPhoto: string;
+  retake: string;
 
   // Product
   productDetail: string;
