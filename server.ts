@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
+import COS from 'cos-nodejs-sdk-v5';
 import { GoogleGenAI, Type } from '@google/genai';
 import { UserProfile } from './src/types';
 
@@ -20,36 +21,91 @@ const DATA_DIR = path.join(process.cwd(), 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const IMAGES_DIR = path.join(DATA_DIR, 'images');
 
+// Tencent Cloud COS configuration
+const COS_SECRET_ID = process.env.COS_SECRET_ID;
+const COS_SECRET_KEY = process.env.COS_SECRET_KEY;
+const COS_REGION = process.env.COS_REGION;
+const COS_BUCKET = process.env.COS_BUCKET;
+
+const cosEnabled = !!(COS_SECRET_ID && COS_SECRET_KEY && COS_REGION && COS_BUCKET);
+const cos = cosEnabled
+  ? new COS({
+      SecretId: COS_SECRET_ID,
+      SecretKey: COS_SECRET_KEY,
+    })
+  : null;
+
+function getCosPublicUrl(key: string): string {
+  return `https://${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com/${key}`;
+}
+
 let users: UserRecord[] = [];
 const sessions = new Map<string, string>(); // token -> userId
 
 async function saveImage(
   userId: string,
-  type: 'closet' | 'profile',
+  type: 'closet' | 'profile' | 'output',
   imageData: string
 ): Promise<{ filePath: string; relativePath: string }> {
-  const userDir = path.join(IMAGES_DIR, userId, type);
-  await fs.mkdir(userDir, { recursive: true });
-
   let base64Data = imageData;
+  let ext = 'jpg';
+  let contentType = 'image/jpeg';
+
   if (imageData.startsWith('data:')) {
     const matches = imageData.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.*)$/);
     if (matches && matches.length === 3) {
+      const mimeType = matches[1];
       base64Data = matches[2];
+      ext = mimeType === 'image/png' ? 'png' : 'jpg';
+      contentType = mimeType;
     }
   }
 
   const timestamp = Date.now();
   const random = Math.random().toString(36).slice(2, 8);
-  const fileName = `${timestamp}-${random}.jpg`;
-  const filePath = path.join(userDir, fileName);
+  const fileName = `${timestamp}-${random}.${ext}`;
+  const key = `images/${userId}/${type}/${fileName}`;
 
+  if (cos && COS_BUCKET && COS_REGION) {
+    await cos.putObject({
+      Bucket: COS_BUCKET,
+      Region: COS_REGION,
+      Key: key,
+      Body: Buffer.from(base64Data, 'base64'),
+      ContentType: contentType,
+    });
+    return {
+      filePath: key,
+      relativePath: getCosPublicUrl(key),
+    };
+  }
+
+  // Fallback to local filesystem when COS is not configured
+  const userDir = path.join(IMAGES_DIR, userId, type);
+  await fs.mkdir(userDir, { recursive: true });
+  const filePath = path.join(userDir, fileName);
   await fs.writeFile(filePath, Buffer.from(base64Data, 'base64'));
 
   return {
     filePath,
     relativePath: `/images/${userId}/${type}/${fileName}`,
   };
+}
+
+async function fetchImageAsBase64(imageUrl: string): Promise<string> {
+  // Handle relative paths by resolving against the local server
+  const url = imageUrl.startsWith('http')
+    ? imageUrl
+    : `http://localhost:${process.env.PORT || 3000}${imageUrl}`;
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image from ${url}: ${response.status}`);
+  }
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const contentType = response.headers.get('content-type') || 'image/jpeg';
+  return `data:${contentType};base64,${buffer.toString('base64')}`;
 }
 
 async function loadUsers(): Promise<void> {
@@ -613,11 +669,16 @@ The second note must relate to weather adaptability and practical lifestyle eleg
       const imageParts: any[] = [];
       const clothingDesc: string[] = [];
 
-      function pushImagePart(imageSrc: string | undefined, label: string) {
+      async function pushImagePart(imageSrc: string | undefined, label: string) {
         if (!imageSrc) return;
+        let imageData = imageSrc;
+        // Fetch remote/local images and convert to base64 data URL
+        if (imageSrc.startsWith('http') || imageSrc.startsWith('/images/')) {
+          imageData = await fetchImageAsBase64(imageSrc);
+        }
         let mimeType = 'image/jpeg';
-        let base64Data = imageSrc;
-        const matches = imageSrc.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.*)$/);
+        let base64Data = imageData;
+        const matches = imageData.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.*)$/);
         if (matches && matches.length === 3) {
           mimeType = matches[1];
           base64Data = matches[2];
@@ -628,10 +689,10 @@ The second note must relate to weather adaptability and practical lifestyle eleg
         clothingDesc.push(label);
       }
 
-      pushImagePart(profilePhoto, 'the person wearing the outfit');
-      pushImagePart(topImage, 'top garment');
-      pushImagePart(bottomImage, 'bottom garment');
-      pushImagePart(shoesImage, 'shoes');
+      await pushImagePart(profilePhoto, 'the person wearing the outfit');
+      await pushImagePart(topImage, 'top garment');
+      await pushImagePart(bottomImage, 'bottom garment');
+      await pushImagePart(shoesImage, 'shoes');
 
       const defaultPrompt = `Create a realistic full-body outfit visualization. The person in the first photo is wearing the clothing items shown in the following reference images: ${clothingDesc.join(', ')}. Preserve the person's face, pose, and lighting. Make the outfit look natural and well-fitted. ${getLanguageInstruction(language)}`;
 
@@ -664,27 +725,23 @@ The second note must relate to weather adaptability and practical lifestyle eleg
         return;
       }
 
-      const extension = generatedImageMimeType === 'image/png' ? 'png' : 'jpg';
-      const userDir = path.join(IMAGES_DIR, userId, 'output');
-      await fs.mkdir(userDir, { recursive: true });
-      const fileName = `outfit-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
-      const filePath = path.join(userDir, fileName);
-      await fs.writeFile(filePath, Buffer.from(generatedImageBase64, 'base64'));
-
-      const relativePath = `/images/${userId}/output/${fileName}`;
-      res.json({ outputImagePath: relativePath });
+      const dataUrl = `data:${generatedImageMimeType};base64,${generatedImageBase64}`;
+      const saved = await saveImage(userId, 'output', dataUrl);
+      res.json({ outputImagePath: saved.relativePath });
     } catch (error: any) {
       console.error('Error in /api/generate-outfit-visual:', error);
       res.status(500).json({ error: error.message || 'Failed to generate outfit visualization.' });
     }
   });
 
-  // Static file serving for user-uploaded images
-  app.use('/images', express.static(IMAGES_DIR));
+  // Static file serving fallback for locally stored images (only when COS is disabled)
+  if (!cosEnabled) {
+    app.use('/images', express.static(IMAGES_DIR));
+  }
 
   // Health check
   app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', geminiEnabled: !!ai });
+    res.json({ status: 'ok', geminiEnabled: !!ai, cosEnabled });
   });
 
   // Vite integration / Static serving
