@@ -28,6 +28,40 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<'home' | 'closet' | 'scan' | 'outfit'>('home');
   const [viewingItem, setViewingItem] = useState<Item | null>(null);
 
+  const loadUserItems = async (token: string, userId?: string) => {
+    try {
+      const res = await fetch('/api/items', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.items && data.items.length > 0) {
+        setItems(data.items);
+      } else {
+        // First login: seed with localized initial items and persist them
+        const initialItems = getInitialItems(language).map((it) => ({
+          ...it,
+          id: it.id.startsWith('init-') ? `${it.id}-${userId || Date.now()}` : it.id,
+        }));
+        setItems(initialItems);
+        await Promise.all(
+          initialItems.map((item) =>
+            fetch('/api/items', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ item }),
+            })
+          )
+        );
+      }
+    } catch (err) {
+      console.error('Failed to load user items:', err);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem(AUTH_TOKEN_KEY);
     if (!token) {
@@ -39,10 +73,11 @@ function AppContent() {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
-      .then((data) => {
+      .then(async (data) => {
         if (data.user) {
           setUser(data.user);
           setIsLoggedIn(true);
+          await loadUserItems(token, data.user.id);
         } else {
           localStorage.removeItem(AUTH_TOKEN_KEY);
         }
@@ -55,10 +90,11 @@ function AppContent() {
       });
   }, []);
 
-  const handleLogin = (authenticatedUser: UserProfile, token: string) => {
+  const handleLogin = async (authenticatedUser: UserProfile, token: string) => {
     localStorage.setItem(AUTH_TOKEN_KEY, token);
     setUser(authenticatedUser);
     setIsLoggedIn(true);
+    await loadUserItems(token, authenticatedUser.id);
   };
 
   const handleLogout = async () => {
@@ -79,17 +115,50 @@ function AppContent() {
     setItems(getInitialItems(language));
   };
 
-  const handleAddItem = (newItem: Item) => {
+  const handleAddItem = async (newItem: Item) => {
     setItems((prev) => [newItem, ...prev]);
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (!token) return;
+    try {
+      await fetch('/api/items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ item: newItem }),
+      });
+    } catch (err) {
+      console.error('Failed to save item:', err);
+    }
   };
 
-  const handleToggleFavorite = (itemId: string) => {
+  const handleToggleFavorite = async (itemId: string) => {
+    const currentItem = items.find((it) => it.id === itemId);
+    if (!currentItem) return;
+    const updatedItem = { ...currentItem, isFavorite: !currentItem.isFavorite };
+
     setItems((prev) =>
-      prev.map((it) => (it.id === itemId ? { ...it, isFavorite: !it.isFavorite } : it))
+      prev.map((it) => (it.id === itemId ? updatedItem : it))
     );
     // Update currently viewed item if applicable
     if (viewingItem && viewingItem.id === itemId) {
-      setViewingItem((prev) => (prev ? { ...prev, isFavorite: !prev.isFavorite } : null));
+      setViewingItem(updatedItem);
+    }
+
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (!token) return;
+    try {
+      await fetch('/api/items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ item: updatedItem }),
+      });
+    } catch (err) {
+      console.error('Failed to update item favorite:', err);
     }
   };
 

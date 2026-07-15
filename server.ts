@@ -5,7 +5,7 @@ import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import COS from 'cos-nodejs-sdk-v5';
 import { GoogleGenAI, Type } from '@google/genai';
-import { UserProfile } from './src/types';
+import { UserProfile, Item } from './src/types';
 
 // Load environment variables
 dotenv.config();
@@ -19,6 +19,7 @@ interface UserRecord extends UserProfile {
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const ITEMS_FILE = path.join(DATA_DIR, 'items.json');
 const IMAGES_DIR = path.join(DATA_DIR, 'images');
 
 // Tencent Cloud COS configuration
@@ -40,6 +41,7 @@ function getCosPublicUrl(key: string): string {
 }
 
 let users: UserRecord[] = [];
+let itemsByUser: Record<string, Item[]> = {};
 const sessions = new Map<string, string>(); // token -> userId
 
 async function saveImage(
@@ -133,6 +135,35 @@ async function loadUsers(): Promise<void> {
 async function saveUsers(): Promise<void> {
   await fs.mkdir(DATA_DIR, { recursive: true });
   await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
+}
+
+async function loadItems(): Promise<void> {
+  try {
+    const data = await fs.readFile(ITEMS_FILE, 'utf-8');
+    itemsByUser = JSON.parse(data);
+  } catch (err: any) {
+    if (err.code === 'ENOENT') {
+      itemsByUser = {};
+      await fs.mkdir(DATA_DIR, { recursive: true });
+      await fs.writeFile(ITEMS_FILE, JSON.stringify(itemsByUser, null, 2));
+    } else {
+      console.error('Failed to load items.json:', err);
+      itemsByUser = {};
+    }
+  }
+}
+
+async function saveItems(): Promise<void> {
+  await fs.mkdir(DATA_DIR, { recursive: true });
+  await fs.writeFile(ITEMS_FILE, JSON.stringify(itemsByUser, null, 2));
+}
+
+function getUserItems(userId: string): Item[] {
+  return itemsByUser[userId] || [];
+}
+
+function setUserItems(userId: string, items: Item[]): void {
+  itemsByUser[userId] = items;
 }
 
 function generateToken(): string {
@@ -315,6 +346,7 @@ if (apiKey) {
 
 async function startServer() {
   await loadUsers();
+  await loadItems();
 
   const app = express();
   const PORT = 3000;
@@ -631,6 +663,68 @@ The second note must relate to weather adaptability and practical lifestyle eleg
     }
 
     res.json({ user: sanitizeUser(user) });
+  });
+
+  // API Route: Get the current user's closet items
+  app.get('/api/items', (req: Request, res: Response): void => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token || !sessions.has(token)) {
+      res.status(401).json({ error: 'Unauthorized.' });
+      return;
+    }
+    const userId = sessions.get(token)!;
+    res.json({ items: getUserItems(userId) });
+  });
+
+  // API Route: Add or update a closet item for the current user
+  app.post('/api/items', async (req: Request, res: Response): Promise<void> => {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      if (!token || !sessions.has(token)) {
+        res.status(401).json({ error: 'Unauthorized.' });
+        return;
+      }
+      const userId = sessions.get(token)!;
+      const item = req.body.item as Item;
+      if (!item || !item.id) {
+        res.status(400).json({ error: 'Missing item.' });
+        return;
+      }
+
+      const items = getUserItems(userId);
+      const existingIndex = items.findIndex((it) => it.id === item.id);
+      if (existingIndex >= 0) {
+        items[existingIndex] = item;
+      } else {
+        items.push(item);
+      }
+      setUserItems(userId, items);
+      await saveItems();
+      res.json({ success: true, item });
+    } catch (error: any) {
+      console.error('Error in POST /api/items:', error);
+      res.status(500).json({ error: error.message || 'Failed to save item.' });
+    }
+  });
+
+  // API Route: Delete a closet item for the current user
+  app.delete('/api/items/:id', async (req: Request, res: Response): Promise<void> => {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+      if (!token || !sessions.has(token)) {
+        res.status(401).json({ error: 'Unauthorized.' });
+        return;
+      }
+      const userId = sessions.get(token)!;
+      const itemId = req.params.id;
+      const items = getUserItems(userId).filter((it) => it.id !== itemId);
+      setUserItems(userId, items);
+      await saveItems();
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('Error in DELETE /api/items:', error);
+      res.status(500).json({ error: error.message || 'Failed to delete item.' });
+    }
   });
 
   // API Route: Upload a frontal face photo for virtual try-on
